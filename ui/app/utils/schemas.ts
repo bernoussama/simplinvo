@@ -1,0 +1,104 @@
+import { faker } from "@faker-js/faker";
+
+export type Client = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  country: string;
+  postalCode: string;
+  ice: string;
+  tax: number;
+};
+
+export type Product = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  tax: number;
+};
+
+export type Order = {
+  id: string;
+  po: string;
+  client: Client;
+  date: Date;
+  products: Product[];
+  quantity: number[];
+  total: number;
+};
+
+export type OrderSummary = {
+  id: string;
+  po: string;
+  client: Client;
+  date: Date;
+  total: number;
+};
+
+export function generateMockClients(count: number): Client[] {
+  return Array.from({ length: count }, () => ({
+    id: faker.string.uuid(),
+    name: faker.company.name(),
+    email: faker.internet.email(),
+    phone: faker.phone.number(),
+    address: faker.location.streetAddress(),
+    city: faker.location.city(),
+    country: faker.location.country(),
+    postalCode: faker.location.zipCode(),
+    ice: faker.string.numeric(10),
+    tax: faker.number.int({ min: 0, max: 20 }),
+  }));
+}
+
+export function generateMockProducts(count: number): Product[] {
+  return Array.from({ length: count }, () => ({
+    id: faker.string.uuid(),
+    name: faker.commerce.productName(),
+    description: faker.commerce.productDescription(),
+    price: parseFloat(faker.commerce.price()),
+    tax: faker.number.int({ min: 0, max: 20 }),
+  }));
+}
+
+export function generateMockOrders(count: number): Order[] {
+  const clients = generateMockClients(count);
+  const products = generateMockProducts(count * 2);
+
+  return Array.from({ length: count }, (_, index) => {
+    const client = clients[index];
+    const orderProducts = products.slice(index * 2, index * 2 + 2);
+    const quantities = orderProducts.map(() =>
+      faker.number.int({ min: 1, max: 10 })
+    );
+    const total = orderProducts.reduce(
+      (sum, product, i) => sum + product.price * quantities[i],
+      0
+    );
+
+    return {
+      id: faker.string.uuid(),
+      po: faker.string.alphanumeric(10),
+      client,
+      date: faker.date.recent(),
+      products: orderProducts,
+      quantity: quantities,
+      total,
+    };
+  });
+}
+
+export function generateMockOrderSummaries(count: number): OrderSummary[] {
+  const orders = generateMockOrders(count);
+
+  return orders.map((order) => ({
+    id: order.id,
+    po: order.po,
+    client: order.client,
+    date: order.date,
+    total: order.total,
+  }));
+}
