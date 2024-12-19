@@ -1,9 +1,24 @@
+/* eslint-disable jsx-a11y/no-noninteractive-tabindex */
 import { Link } from "@remix-run/react";
-import { pb } from "@/lib/pocketbase";
+import { isLoggedIn, pb } from "@/lib/pocketbase";
 import ThemeToggle from "./theme-toggle";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export default function NavBar() {
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    setLoggedIn(isLoggedIn());
+    const unsubscribe = pb.authStore.onChange(() => {
+      setLoggedIn(isLoggedIn());
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   const navigate = useNavigate();
   function logout() {
     console.log("logout");
@@ -81,12 +96,15 @@ export default function NavBar() {
       </div>
       <div className="navbar-end gap-4">
         <ThemeToggle />
-        <Link className="btn" to="/login">
-          Login
-        </Link>
-        <button className="btn" onClick={logout}>
-          Logout
-        </button>
+        {loggedIn ? (
+          <button className="btn" onClick={logout}>
+            Logout
+          </button>
+        ) : (
+          <Link className="btn" to="/login">
+            Login
+          </Link>
+        )}
       </div>
     </div>
   );

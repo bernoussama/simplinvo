@@ -17,7 +17,11 @@ export default function Login() {
         .authWithPassword(email, password);
       console.log("User logged in successfully:", authData);
       //redirect to dashboard
-      navigate("/dashboard");
+      if (authData.record.company == "") {
+        navigate("/new-company");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error("Error logging in user:", error);
     }

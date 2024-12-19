@@ -2,15 +2,23 @@ import { useState } from "react";
 import { MetaFunction } from "@remix-run/node";
 import { generateMockClients, Client } from "@/utils/schemas";
 import Protected from "@/components/Protected";
+import { pb } from "@/lib/pocketbase";
 export const meta: MetaFunction = () => {
   return [
     { title: "Clients" },
     { name: "description", content: "Clients page" },
   ];
 };
-// import "./clients.css";
+
+async function getAllClients() {
+  const records = await pb.collection("clients").getFullList({
+    sort: "-someField",
+  });
+  return records.map((record) => record.data);
+}
 
 const mockClients: Client[] = generateMockClients(10);
+const allClients: Client[] = getAllClients();
 
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>(mockClients);
