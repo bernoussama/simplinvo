@@ -8,7 +8,7 @@ export type Client = {
   address: string;
   city: string;
   country: string;
-  postalCode: string;
+  postal_code: string;
   ice: string;
   tax: number;
 };
@@ -48,7 +48,7 @@ export function generateMockClients(count: number): Client[] {
     address: faker.location.streetAddress(),
     city: faker.location.city(),
     country: faker.location.country(),
-    postalCode: faker.location.zipCode(),
+    postal_code: faker.location.zipCode(),
     ice: faker.string.numeric(10),
     tax: faker.number.int({ min: 0, max: 20 }),
   }));

@@ -14,13 +14,14 @@ export default function ThemeToggle() {
     window.localStorage.setItem("isdark", JSON.stringify(isdark));
     document.documentElement.setAttribute(
       "data-theme",
-      isdark ? "dark" : "light"
+      isdark ? "business" : "corporate"
     );
   }, [isdark]);
 
   return (
     <>
       <label className="flex cursor-pointer gap-2">
+        <span className="sr-only">Toggle theme</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"

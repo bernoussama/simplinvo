@@ -3,7 +3,6 @@ import daisyui from "daisyui";
 import tailwindcssAnimate from "tailwindcss-animate";
 import typography from "@tailwindcss/typography";
 
-
 export default {
   content: ["./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}"],
   theme: {
@@ -23,5 +22,7 @@ export default {
     },
   },
   plugins: [typography, tailwindcssAnimate, daisyui],
-
+  daisyui: {
+    themes: ["corporate", "business"],
+  },
 } satisfies Config;
