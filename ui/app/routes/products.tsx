@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { pb } from "@/lib/pocketbase";
 import { MetaFunction } from "@remix-run/node";
 import { generateMockProducts, Product } from "@/utils/schemas";
+import Protected from "@/components/Protected";
 
 export const meta: MetaFunction = () => {
   return [
@@ -108,7 +109,7 @@ export default function Products() {
   };
 
   return (
-    <>
+    <Protected>
       <div className="flex flex-col items-center justify-center">
         <h1 className="text-3xl font-bold">Products</h1>
         <div className="flex justify-end w-full mb-4">
@@ -283,6 +284,6 @@ export default function Products() {
           </table>
         </div>
       </div>
-    </>
+    </Protected>
   );
 }
