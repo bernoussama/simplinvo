@@ -1,4 +1,6 @@
-import { useState } from "react";
+/* eslint-disable jsx-a11y/label-has-associated-control */
+import { useState, useEffect } from "react";
+import { pb } from "@/lib/pocketbase";
 import { MetaFunction } from "@remix-run/node";
 import { generateMockProducts, Product } from "@/utils/schemas";
 
@@ -9,12 +11,30 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-const mockProducts: Product[] = generateMockProducts(10);
+// const mockProducts: Product[] = generateMockProducts(10);
+//
+async function getAllProducts() {
+  const records = await pb.collection("products").getFullList({
+    sort: "-name",
+  });
+  console.log("Records:", records);
+  return records;
+}
 
 export default function Products() {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Product>>({});
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const allProducts = await getAllProducts();
+      setProducts(allProducts as unknown as Product[]);
+      console.log("All products:", allProducts);
+    };
+
+    fetchProducts();
+  }, []);
 
   const handleEditClick = (product: Product) => {
     setEditingProductId(product.id);
@@ -28,24 +48,140 @@ export default function Products() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSaveClick = () => {
-    setProducts((prevProducts) =>
-      prevProducts.map((product) =>
-        product.id === editingProductId ? { ...product, ...formData } : product
-      )
-    );
-    setEditingProductId(null);
-    setFormData({});
+  const handleSaveClick = async () => {
+    try {
+      const data = {
+        company: pb.authStore.record?.company,
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        tax: formData.tax,
+      };
+      const updatedProduct = await pb
+        .collection("products")
+        .update(editingProductId!, data);
+      console.log("Product updated:", updatedProduct);
+      const allProducts = await getAllProducts();
+      setProducts(allProducts as unknown as Product[]);
+
+      setEditingProductId(null);
+      setFormData({});
+    } catch (error) {
+      console.error("Error updating product:", error);
+    }
   };
 
   const handleCancelClick = () => {
     setEditingProductId(null);
     setFormData({});
   };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleNewProductClick = () => {
+    const mockProduct = generateMockProducts(1)[0];
+    setFormData(mockProduct);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setFormData({});
+  };
+
+  const handleNewProductSave = async () => {
+    try {
+      const data = {
+        company: pb.authStore.record?.company,
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        tax: formData.tax,
+      };
+      const newProduct = await pb.collection("products").create(data);
+      const allProducts = await getAllProducts();
+      setProducts(allProducts as unknown as Product[]);
+      setIsModalOpen(false);
+      setFormData({});
+    } catch (error) {
+      console.error("Error creating product:", error);
+    }
+  };
+
   return (
     <>
       <div className="flex flex-col items-center justify-center">
         <h1 className="text-3xl font-bold">Products</h1>
+        <div className="flex justify-end w-full mb-4">
+          <button className="btn btn-primary" onClick={handleNewProductClick}>
+            New
+          </button>
+        </div>
+        <div className={`modal ${isModalOpen ? "modal-open" : ""}`}>
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">New Product</h3>
+            <form>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Name</span>
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name || ""}
+                  onChange={handleInputChange}
+                  className="input input-bordered"
+                />
+              </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Description</span>
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description || ""}
+                  onChange={handleInputChange}
+                  className="textarea textarea-bordered"
+                  rows={3}
+                />
+              </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Price</span>
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price || 0}
+                  onChange={handleInputChange}
+                  className="input input-bordered"
+                />
+              </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Tax</span>
+                </label>
+                <input
+                  type="number"
+                  name="tax"
+                  value={formData.tax || 0}
+                  onChange={handleInputChange}
+                  className="input input-bordered"
+                />
+              </div>
+            </form>
+            <div className="modal-action">
+              <button
+                className="btn btn-primary"
+                onClick={handleNewProductSave}
+              >
+                Save
+              </button>
+              <button className="btn" onClick={handleModalClose}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="table table-zebra w-full">
             {/* head */}
