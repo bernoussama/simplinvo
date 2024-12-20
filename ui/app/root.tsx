@@ -6,6 +6,7 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
+import { setTheme } from "@/utils/theme";
 
 import "./tailwind.css";
 import NavBar from "./components/NavBar";
@@ -25,12 +26,17 @@ export const links: LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="business">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: setTheme() as unknown as string,
+          }}
+        />
       </head>
       <body>
         <div className="container mx-auto h-auto">

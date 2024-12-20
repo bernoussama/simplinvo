@@ -15,7 +15,7 @@ export const meta: MetaFunction = () => {
 
 async function getAllClients() {
   const records = await pb.collection("clients").getFullList({
-    // sort: "-name",
+    sort: "-name",
   });
   console.log("Records:", records);
   return records;
@@ -35,6 +35,7 @@ export default function Clients() {
 
     fetchClients();
   }, []);
+
   const handleEditClick = (client: Client) => {
     setEditingClientId(client.id);
     setFormData(client);
@@ -114,8 +115,8 @@ export default function Clients() {
       console.log("New client created:", newClient);
       setIsModalOpen(false);
       setFormData({});
-      // const allClients = await getAllClients();
-      // setClients(allClients);
+      const allClients = await getAllClients();
+      setClients(allClients);
     } catch (error) {
       console.error("Error creating client:", error);
     }
