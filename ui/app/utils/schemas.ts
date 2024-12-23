@@ -24,18 +24,18 @@ export type Product = {
 export type Order = {
   id: string;
   po: string;
-  client: Client;
+  client: string;
   date: Date;
-  products: Product[];
-  quantity: number[];
+  products: string;
+  quantity: string;
   total: number;
 };
 
 export type OrderSummary = {
   id: string;
   po: string;
-  client: Client;
-  date: Date;
+  client: string;
+  date: string;
   total: number;
 };
 
