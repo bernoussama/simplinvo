@@ -25,11 +25,18 @@ export type Order = {
   id: string;
   po: string;
   client: string;
-  date: Date;
+  date: string;
   products: string;
   quantity: string;
   total: number;
 };
+
+export interface OrderDetail {
+  id: string;
+  order: string;
+  product: string;
+  quantity: number;
+}
 
 export type OrderSummary = {
   id: string;

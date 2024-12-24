@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { MetaFunction } from "@remix-run/node";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { pb } from "@/lib/pocketbase";
 import { OrderSummary, Order, Client, Product } from "@/utils/schemas";
 import Modal from "@/components/Modal";
@@ -14,6 +15,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Invoices() {
+  const navigate = useNavigate();
   const [orderSummaries, setOrderSummaries] = useState<OrderSummary[]>([]);
   const [orderDetails, setOrderDetails] = useState<Order[]>([]);
   const [formData, setFormData] = useState<Partial<Order>>({
@@ -24,6 +26,7 @@ export default function Invoices() {
     products: [{ product: "", quantity: 0 }],
   });
   const [clients, setClients] = useState<Client[]>([]);
+  const [clientMap, setClientMap] = useState<{ [key: string]: string }>({});
   const [products, setProducts] = useState<Product[]>([]);
 
   async function getAllOrderSummaries() {
@@ -52,6 +55,11 @@ export default function Invoices() {
         sort: "-created",
       });
       setClients(clientsRecords);
+      const clientMap = clientsRecords.reduce((map, client) => {
+        map[client.id] = client.name;
+        return map;
+      }, {});
+      setClientMap(clientMap);
 
       const productsRecords = await pb.collection("products").getFullList({
         sort: "-created",
@@ -64,6 +72,7 @@ export default function Invoices() {
   }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -104,6 +113,7 @@ export default function Invoices() {
       date: "",
       products: [{ product: "", quantity: 0 }],
     });
+    setEditingOrderId(null);
     setIsModalOpen(true);
   };
 
@@ -117,15 +127,61 @@ export default function Invoices() {
       products: [{ product: "", quantity: 0 }],
     });
   };
-  function handleEditClick(orderSummary: OrderSummary) {
-    // TODO:
-  }
+  const handleEditClick = async (orderSummary: OrderSummary) => {
+    // Fetch the order details
+    const orderDetails = await pb
+      .collection("order_details")
+      .getFullList({ filter: `order="${orderSummary.id}"` });
+
+    // Populate the form with the existing order data
+    setFormData({
+      company: orderSummary.company,
+      po: orderSummary.po,
+      client: orderSummary.client,
+      date: orderSummary.date,
+      products: orderDetails.map((detail) => ({
+        product: detail.product,
+        quantity: detail.quantity,
+      })),
+    });
+    setEditingOrderId(orderSummary.id);
+    setIsModalOpen(true);
+  };
   function handleShowClick(orderSummary: OrderSummary) {
-    // TODO:
+    navigate(`/invoice/${orderSummary.id}`);
   }
   const handleNewOrderSave = async () => {
-    console.log(formData);
-    try {
+    if (editingOrderId) {
+      // Update the existing order
+      const orderData = {
+        company: pb.authStore.record?.company,
+        po: formData.po,
+        client: formData.client,
+        date: formData.date,
+      };
+      await pb.collection("orders").update(editingOrderId, orderData);
+
+      // Delete existing order details
+      const existingOrderDetails = await pb
+        .collection("order_details")
+        .getFullList({ filter: `order="${editingOrderId}"` });
+      await Promise.all(
+        existingOrderDetails.map((detail) =>
+          pb.collection("order_details").delete(detail.id)
+        )
+      );
+
+      // Add new order details
+      formData.products?.forEach(async (element) => {
+        const orderDetailData = {
+          company: pb.authStore.record?.company,
+          order: editingOrderId,
+          product: element.product,
+          quantity: Number(element.quantity),
+        };
+        await pb.collection("order_details").create(orderDetailData);
+      });
+    } else {
       // Create the order first
       const orderData = {
         company: pb.authStore.record?.company,
@@ -135,25 +191,26 @@ export default function Invoices() {
       };
       const newOrder = await pb.collection("orders").create(orderData);
 
-      // add entry for each product in invoice/order
+      // Add entry for each product in invoice/order
       formData.products?.forEach(async (element) => {
-        // Create the order details
         const orderDetailData = {
           company: pb.authStore.record?.company,
           order: newOrder.id,
           product: element.product,
           quantity: Number(element.quantity),
         };
-        const newOrderDetail = await pb
-          .collection("order_details")
-          .create(orderDetailData);
+        await pb.collection("order_details").create(orderDetailData);
       });
-
-      setIsModalOpen(false);
-      setFormData({});
-    } catch (error) {
-      console.error("Error creating order and order detail:", error);
     }
+
+    setFormData({
+      company: "",
+      po: "",
+      client: "",
+      date: "",
+      products: [{ product: "", quantity: 0 }],
+    });
+    setIsModalOpen(false);
   };
 
   return (
@@ -292,7 +349,7 @@ export default function Invoices() {
               {orderSummaries.map((orderSummary, _index) => (
                 <tr key={orderSummary.id}>
                   <td>{orderSummary.id}</td>
-                  <td>{orderSummary.client}</td>
+                  <td>{clientMap[orderSummary.client]}</td>
                   <td>{orderSummary.date}</td>
                   <td>{orderSummary.po}</td>
                   <td>{orderSummary.total}</td>
