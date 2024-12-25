@@ -66,6 +66,8 @@ export default function Invoice() {
               <tr>
                 <th>Product</th>
                 <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
               </tr>
             </thead>
             <tbody>
@@ -73,8 +75,22 @@ export default function Invoice() {
                 <tr key={detail.id}>
                   <td>{products[detail.product]?.name}</td>
                   <td>{detail.quantity}</td>
+                  <td>{products[detail.product]?.price}</td>
+                  <td>{detail.quantity * products[detail.product]?.price}</td>
                 </tr>
               ))}
+              <tr>
+                <td></td>
+                <td></td>
+                <td className="text-end">Total:</td>
+                <td>
+                  {orderDetails.reduce(
+                    (total, detail) =>
+                      total + detail.quantity * products[detail.product]?.price,
+                    0
+                  )}
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
