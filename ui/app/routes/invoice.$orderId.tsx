@@ -30,7 +30,7 @@ export default function Invoice() {
 
       const productIds = orderDetailsRecords.map((detail) => detail.product);
       const productsRecords = await pb.collection("products").getFullList({
-        filter: `id in (${productIds.join(",")})`,
+        // filter: `id="${detail}"`,
       });
       const productsMap = productsRecords.reduce((map, product) => {
         map[product.id] = product;
