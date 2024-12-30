@@ -158,6 +158,12 @@ export default function Invoices() {
         po: formData.po,
         client: formData.client,
         date: formData.date,
+        total: formData.products?.reduce((acc, product) => {
+          const productDetails = products.find((p) => p.id === product.product);
+          return (
+            acc + (productDetails ? productDetails.price * product.quantity : 0)
+          );
+        }, 0),
       };
       await pb.collection("orders").update(editingOrderId, orderData);
 

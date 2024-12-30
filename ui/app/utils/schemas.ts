@@ -21,12 +21,15 @@ export type Product = {
   tax: number;
 };
 
+export type OProduct = { product: string; quantity: number };
+
 export type Order = {
+  company: string;
   id: string;
   po: string;
   client: string;
   date: string;
-  products: string;
+  products: OProduct[];
   quantity: string;
   total: number;
 };
