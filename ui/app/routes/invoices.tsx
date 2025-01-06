@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { pb } from "@/lib/pocketbase";
 import { OrderSummary, Order, Client, Product } from "@/utils/schemas";
-import Modal from "@/components/Modal";
 import Protected from "@/components/Protected";
 
 export const meta: MetaFunction = () => {
@@ -17,7 +16,6 @@ export const meta: MetaFunction = () => {
 export default function Invoices() {
   const navigate = useNavigate();
   const [orderSummaries, setOrderSummaries] = useState<OrderSummary[]>([]);
-  const [orderDetails, setOrderDetails] = useState<Order[]>([]);
   const [formData, setFormData] = useState<Partial<Order>>({
     company: "",
     po: "",
@@ -26,7 +24,7 @@ export default function Invoices() {
     products: [{ product: "", quantity: 0 }],
   });
   const [clients, setClients] = useState<Client[]>([]);
-  const [clientMap, setClientMap] = useState<{ [key: string]: string }>({});
+  const [clientMap, setClientMap] = useState<Record<string, string>>({});
   const [products, setProducts] = useState<Product[]>([]);
 
   async function getAllOrderSummaries() {
@@ -42,28 +40,29 @@ export default function Invoices() {
       const allOrderSummaries = await getAllOrderSummaries();
 
       setOrderSummaries(
-        allOrderSummaries.map((order) => {
-          order.date = order.date.split(" ")[0];
-          return order;
-        }) as unknown as OrderSummary[]
+        allOrderSummaries.map((order) => ({
+          ...order,
+          date: order.date.split(" ")[0],
+        })) as OrderSummary[]
       );
       console.log("All order summaries:", allOrderSummaries);
     };
 
     const fetchClientsAndProducts = async () => {
-      const clientsRecords = await pb.collection("clients").getFullList({
+      const clientsRecords = (await pb.collection("clients").getFullList({
         sort: "-created",
-      });
+      })) as unknown as Client[];
       setClients(clientsRecords);
-      const clientMap = clientsRecords.reduce((map, client) => {
-        map[client.id] = client.name;
-        return map;
-      }, {});
-      setClientMap(clientMap);
 
-      const productsRecords = await pb.collection("products").getFullList({
-        sort: "-created",
+      const newClientMap: Record<string, string> = {};
+      clientsRecords.forEach((client) => {
+        newClientMap[client.id] = client.name;
       });
+      setClientMap(newClientMap);
+
+      const productsRecords = (await pb.collection("products").getFullList({
+        sort: "-created",
+      })) as unknown as Product[];
       setProducts(productsRecords);
     };
 
@@ -88,21 +87,25 @@ export default function Invoices() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    const newProducts = [...formData.products];
-    newProducts[index] = { ...newProducts[index], [name]: value };
-    setFormData((prev) => ({ ...prev, products: newProducts }));
+    setFormData((prev) => {
+      const newProducts = [...(prev.products || [])];
+      newProducts[index] = { ...newProducts[index], [name]: value };
+      return { ...prev, products: newProducts };
+    });
   };
 
   const handleAddProduct = () => {
     setFormData((prev) => ({
       ...prev,
-      products: [...prev.products, { product: "", quantity: 0 }],
+      products: [...(prev.products || []), { product: "", quantity: 0 }],
     }));
   };
 
   const handleRemoveProduct = (index: number) => {
-    const newProducts = formData.products.filter((_, i) => i !== index);
-    setFormData((prev) => ({ ...prev, products: newProducts }));
+    setFormData((prev) => ({
+      ...prev,
+      products: prev.products?.filter((_, i) => i !== index),
+    }));
   };
 
   const handleNewOrderClick = () => {
@@ -127,15 +130,13 @@ export default function Invoices() {
       products: [{ product: "", quantity: 0 }],
     });
   };
+
   const handleEditClick = async (orderSummary: OrderSummary) => {
-    // Fetch the order details
     const orderDetails = await pb
       .collection("order_details")
       .getFullList({ filter: `order="${orderSummary.id}"` });
 
-    // Populate the form with the existing order data
     setFormData({
-      company: orderSummary.company,
       po: orderSummary.po,
       client: orderSummary.client,
       date: orderSummary.date,
@@ -147,66 +148,61 @@ export default function Invoices() {
     setEditingOrderId(orderSummary.id);
     setIsModalOpen(true);
   };
-  function handleShowClick(orderSummary: OrderSummary) {
+
+  const handleShowClick = (orderSummary: OrderSummary) => {
     navigate(`/invoice/${orderSummary.id}`);
-  }
+  };
+
   const handleNewOrderSave = async () => {
+    const orderData = {
+      company: pb.authStore.record?.company,
+      po: formData.po,
+      client: formData.client,
+      date: formData.date,
+      total: formData.products?.reduce((acc, product) => {
+        const productDetails = products.find((p) => p.id === product.product);
+        return (
+          acc + (productDetails ? productDetails.price * product.quantity : 0)
+        );
+      }, 0),
+    };
+
     if (editingOrderId) {
-      // Update the existing order
-      const orderData = {
-        company: pb.authStore.record?.company,
-        po: formData.po,
-        client: formData.client,
-        date: formData.date,
-        total: formData.products?.reduce((acc, product) => {
-          const productDetails = products.find((p) => p.id === product.product);
-          return (
-            acc + (productDetails ? productDetails.price * product.quantity : 0)
-          );
-        }, 0),
-      };
       await pb.collection("orders").update(editingOrderId, orderData);
 
-      // Delete existing order details
       const existingOrderDetails = await pb
         .collection("order_details")
         .getFullList({ filter: `order="${editingOrderId}"` });
+
       await Promise.all(
         existingOrderDetails.map((detail) =>
           pb.collection("order_details").delete(detail.id)
         )
       );
 
-      // Add new order details
-      formData.products?.forEach(async (element) => {
-        const orderDetailData = {
-          company: pb.authStore.record?.company,
-          order: editingOrderId,
-          product: element.product,
-          quantity: Number(element.quantity),
-        };
-        await pb.collection("order_details").create(orderDetailData);
-      });
+      await Promise.all(
+        formData.products?.map((element) =>
+          pb.collection("order_details").create({
+            company: pb.authStore.record?.company,
+            order: editingOrderId,
+            product: element.product,
+            quantity: Number(element.quantity),
+          })
+        ) || []
+      );
     } else {
-      // Create the order first
-      const orderData = {
-        company: pb.authStore.record?.company,
-        po: formData.po,
-        client: formData.client,
-        date: formData.date,
-      };
       const newOrder = await pb.collection("orders").create(orderData);
 
-      // Add entry for each product in invoice/order
-      formData.products?.forEach(async (element) => {
-        const orderDetailData = {
-          company: pb.authStore.record?.company,
-          order: newOrder.id,
-          product: element.product,
-          quantity: Number(element.quantity),
-        };
-        await pb.collection("order_details").create(orderDetailData);
-      });
+      await Promise.all(
+        formData.products?.map((element) =>
+          pb.collection("order_details").create({
+            company: pb.authStore.record?.company,
+            order: newOrder.id,
+            product: element.product,
+            quantity: Number(element.quantity),
+          })
+        ) || []
+      );
     }
 
     setFormData({
@@ -280,7 +276,7 @@ export default function Invoices() {
                   className="input input-bordered"
                 />
               </div>
-              {formData.products.map((product, index) => (
+              {formData.products?.map((product, index) => (
                 <div key={index} className="form-control">
                   <label className="label">
                     <span className="label-text">Product</span>
@@ -340,7 +336,6 @@ export default function Invoices() {
 
         <div className="overflow-x-auto">
           <table className="table table-zebra w-full">
-            {/* head */}
             <thead>
               <tr>
                 <th>ID</th>
@@ -352,7 +347,7 @@ export default function Invoices() {
               </tr>
             </thead>
             <tbody>
-              {orderSummaries.map((orderSummary, _index) => (
+              {orderSummaries.map((orderSummary) => (
                 <tr key={orderSummary.id}>
                   <td>{orderSummary.id}</td>
                   <td>{clientMap[orderSummary.client]}</td>
