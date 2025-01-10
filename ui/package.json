@@ -14,8 +14,10 @@
     "@react-pdf/renderer": "^4.1.6",
     "@remix-run/node": "^2.15.1",
     "@remix-run/react": "^2.15.1",
+    "chart.js": "^4.4.7",
     "isbot": "^4",
     "react": "^18.2.0",
+    "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
