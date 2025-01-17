@@ -21,21 +21,31 @@ export type Product = {
   tax: number;
 };
 
+export type OProduct = { product: string; quantity: number };
+
 export type Order = {
+  company: string;
   id: string;
   po: string;
-  client: Client;
-  date: Date;
-  products: Product[];
-  quantity: number[];
+  client: string;
+  date: string;
+  products: OProduct[];
+  quantity: string;
   total: number;
 };
+
+export interface OrderDetail {
+  id: string;
+  order: string;
+  product: string;
+  quantity: number;
+}
 
 export type OrderSummary = {
   id: string;
   po: string;
-  client: Client;
-  date: Date;
+  client: string;
+  date: string;
   total: number;
 };
 

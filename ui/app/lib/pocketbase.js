@@ -8,5 +8,5 @@ export function getCurrentUser() {
 }
 
 export function isLoggedIn() {
-  return pb.authStore.record !== null;
+  return pb.authStore.record !== null && pb.authStore.isValid;
 }
