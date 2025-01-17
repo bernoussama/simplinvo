@@ -20,10 +20,17 @@ export default function Invoice() {
   const [client, setClient] = useState<Client | null>(null);
   const [products, setProducts] = useState<{ [key: string]: Product }>({});
 
+  const currency = new Intl.NumberFormat({ style: "currency" });
+
   useEffect(() => {
     const fetchOrder = async () => {
       const orderRecord = await pb.collection("orders").getOne(orderId);
-      setOrder(orderRecord);
+      setOrder({
+        ...orderRecord,
+        date: orderRecord.date
+          ? new Date(orderRecord.date).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+      });
 
       const clientRecord = await pb
         .collection("clients")
@@ -116,25 +123,6 @@ export default function Invoice() {
       width: 60,
       fontWeight: "bold",
     },
-    // table: {
-    //   marginTop: 20,
-    //   borderWidth: 1,
-    //   borderColor: "#000",
-    // },
-    // tableHeader: {
-    //   flexDirection: "row",
-    //   borderBottomWidth: 1,
-    //   borderColor: "#000",
-    //   backgroundColor: "#f3f4f6",
-    //   padding: 8,
-    //   fontWeight: "bold",
-    // },
-    // tableRow: {
-    //   flexDirection: "row",
-    //   borderBottomWidth: 1,
-    //   borderColor: "#000",
-    //   padding: 8,
-    // },
     column1: { width: "40%" },
     column2: { width: "20%", textAlign: "center" },
     column3: { width: "20%", textAlign: "right" },
@@ -194,7 +182,7 @@ export default function Invoice() {
       <Document>
         <Page size="A4" style={styles.page}>
           <View>
-            <Text style={styles.header}>Invoice #{order.id}</Text>
+            <Text style={styles.header}>Invoice {order.id}</Text>
 
             <View style={styles.clientInfo}>
               <View style={styles.infoRow}>
@@ -235,13 +223,13 @@ export default function Invoice() {
                   </Text>
                   <Text style={styles.column2}>{detail.quantity}</Text>
                   <Text style={styles.column3}>
-                    ${products[detail.product]?.price.toFixed(2)}
+                    ${currency.format(products[detail.product]?.price)}
                   </Text>
                   <Text style={styles.column4}>
                     $
-                    {(
+                    {currency.format(
                       detail.quantity * (products[detail.product]?.price || 0)
-                    ).toFixed(2)}
+                    )}
                   </Text>
                 </View>
               ))}
@@ -250,7 +238,7 @@ export default function Invoice() {
             {/* Total */}
             <View style={styles.total}>
               <Text style={styles.totalLabel}>Total:</Text>
-              <Text style={styles.totalAmount}>${total.toFixed(2)}</Text>
+              <Text style={styles.totalAmount}>${currency.format(total)}</Text>
             </View>
           </View>
         </Page>
