@@ -19,11 +19,19 @@ export default function Invoice() {
   const [orderDetails, setOrderDetails] = useState<OrderDetail[]>([]);
   const [client, setClient] = useState<Client | null>(null);
   const [products, setProducts] = useState<{ [key: string]: Product }>({});
+  const [company, setCompany] = useState(null);
 
   const currency = new Intl.NumberFormat({ style: "currency" });
 
   useEffect(() => {
+    console.log(pb.authStore.record);
     const fetchOrder = async () => {
+      const companyId = pb.authStore.record?.company;
+      const companyRecord = await pb
+        .collection("Companies")
+        .getOne(companyId, { fields: "name,country,city,ice" });
+      setCompany(companyRecord);
+      console.log(company);
       const orderRecord = await pb.collection("orders").getOne(orderId);
       setOrder({
         ...orderRecord,
@@ -104,16 +112,41 @@ export default function Invoice() {
   const styles = StyleSheet.create({
     page: {
       padding: 30,
+      paddingTop: 120,
       fontSize: 12,
     },
     header: {
-      fontSize: 24,
+      flexDirection: "row",
       marginBottom: 20,
-      color: "#374151",
+      justifyContent: "space-between",
     },
     clientInfo: {
+      textAlign: "center",
+      flexDirection: "column",
+      justifyContent: "space-between",
+      gap: 10,
+      width: "45%",
+      padding: "8px",
       fontSize: 14,
       marginBottom: 20,
+      borderWidth: 1,
+      borderColor: "#000",
+      borderRadius: 8, // Add this for rounded corners
+      overflow: "hidden", // This is important to make borderRadius work
+    },
+
+    companyInfo: {
+      textAlign: "center",
+      flexDirection: "column",
+      justifyContent: "space-evenly",
+      width: "45%",
+      padding: "8px",
+      fontSize: 14,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: "#000",
+      borderRadius: 8, // Add this for rounded corners
+      overflow: "hidden", // This is important to make borderRadius work
     },
     infoRow: {
       flexDirection: "row",
@@ -182,20 +215,48 @@ export default function Invoice() {
       <Document>
         <Page size="A4" style={styles.page}>
           <View>
-            <Text style={styles.header}>Invoice {order.id}</Text>
+            {/* <Text style={styles.header}>Invoice {order.id}</Text> */}
 
-            <View style={styles.clientInfo}>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Client:</Text>
+            <View style={styles.header}>
+              <View style={styles.companyInfo}>
+                <Text>{company?.name}</Text>
+                <Text>{company?.city}</Text>
+                <Text>{company?.country}</Text>
+              </View>
+
+              <View style={styles.clientInfo}>
                 <Text>{client.name}</Text>
+                <Text>{client.address}</Text>
+                <Text>ice: {client.ice}</Text>
               </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>PO:</Text>
-                <Text>{order.po}</Text>
+            </View>
+
+            <View style={styles.table}>
+              {/* Table Header */}
+              <View style={styles.tableHeader}>
+                <Text style={{ width: "25%", textAlign: "center" }}>
+                  Invoice
+                </Text>
+                <Text style={{ width: "25%", textAlign: "center" }}>Date</Text>
+                <Text style={{ width: "25%", textAlign: "center" }}>
+                  Client
+                </Text>
+                <Text style={{ width: "25%", textAlign: "center" }}>PO</Text>
               </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Date:</Text>
-                <Text>{new Date(order.date).toLocaleDateString()}</Text>
+
+              <View style={styles.tableRowLast}>
+                <Text style={{ width: "25%", textAlign: "center" }}>
+                  {order.id}
+                </Text>
+                <Text style={{ width: "25%", textAlign: "center" }}>
+                  {new Date(order.date).toLocaleDateString()}
+                </Text>
+                <Text style={{ width: "25%", textAlign: "center" }}>
+                  {client.name}
+                </Text>
+                <Text style={{ width: "25%", textAlign: "center" }}>
+                  {order.po}
+                </Text>
               </View>
             </View>
 
