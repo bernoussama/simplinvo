@@ -12,6 +12,11 @@ import {
   PDFViewer,
   StyleSheet,
 } from "@react-pdf/renderer";
+type IProduct = {
+  id: string;
+  quantity: number;
+  price: number;
+};
 
 export default function Invoice() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -21,17 +26,27 @@ export default function Invoice() {
   const [products, setProducts] = useState<{ [key: string]: Product }>({});
   const [company, setCompany] = useState(null);
 
-  const currency = new Intl.NumberFormat({ style: "currency" });
+  const [allProducts, setAllproducts] = useState<Product[]>([]);
+  const [addingProduct, setAddingProduct] = useState(false);
+  const [productToAdd, setProductToAdd] = useState<IProduct>({
+    id: "product",
+    quantity: 1,
+    price: 1,
+  });
+  // modal stuff
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState<Partial<Product>>({});
+
+  const currency = new Intl.NumberFormat();
 
   useEffect(() => {
-    console.log(pb.authStore.record);
     const fetchOrder = async () => {
       const companyId = pb.authStore.record?.company;
       const companyRecord = await pb
         .collection("Companies")
         .getOne(companyId, { fields: "name,country,city,ice" });
+
       setCompany(companyRecord);
-      console.log(company);
       const orderRecord = await pb.collection("orders").getOne(orderId);
       setOrder({
         ...orderRecord,
@@ -56,6 +71,8 @@ export default function Invoice() {
       const productsRecords = await pb.collection("products").getFullList({
         // filter: `id="${detail}"`,
       });
+      setAllproducts(productsRecords);
+
       const productsMap = productsRecords.reduce((map, product) => {
         map[product.id] = product;
         return map;
@@ -107,6 +124,66 @@ export default function Invoice() {
   if (!order || !client) {
     return <div>Loading...</div>;
   }
+
+  async function handleAddProduct() {
+    // event: MouseEvent<HTMLButtonElement, MouseEvent>
+    // setFormData({});
+    // setIsModalOpen(true);
+    // setAddingProduct(true);
+    //
+    console.log(productToAdd);
+
+    const data = {
+      company: pb.authStore.record?.company,
+      order: orderId,
+      product: productToAdd.id,
+      quantity: Number(productToAdd.quantity),
+    };
+
+    console.log(data);
+    const record = await pb.collection("order_details").create(data);
+    console.log("product added: ", record);
+  }
+
+  function handleNewProduct() {
+    setFormData({});
+    setIsModalOpen(true);
+  }
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setFormData({});
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleProductChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    console.log(name, value);
+    const newProduct = { ...productToAdd };
+    switch (name) {
+      case "id":
+        newProduct.id = value;
+        break;
+      case "quantity":
+        newProduct.quantity = parseInt(value);
+        break;
+      case "price":
+        newProduct.price = parseFloat(value);
+        break;
+      default:
+        break;
+    }
+    setProductToAdd(newProduct);
+    console.log("product to add: ", productToAdd);
+  };
+
+  function handleNewProductSave() {}
 
   // Define PDF styles
   const styles = StyleSheet.create({
@@ -191,7 +268,7 @@ export default function Invoice() {
     },
     tableRow: {
       flexDirection: "row",
-      borderBottomWidth: 1,
+      // borderBottomWidth: 1,
       borderColor: "#000",
       padding: 8,
     },
@@ -310,8 +387,62 @@ export default function Invoice() {
   return (
     <Protected>
       <div className="container mx-auto p-4 grid grid-cols-2 gap-4">
+        <div className={`modal ${isModalOpen ? "modal-open" : ""}`}>
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">New Client</h3>
+            <form>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Name</span>
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name || ""}
+                  onChange={handleInputChange}
+                  className="input input-bordered"
+                />
+              </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Price</span>
+                </label>
+                <input
+                  type="price"
+                  name="price"
+                  value={formData.price || ""}
+                  onChange={handleInputChange}
+                  className="input input-bordered"
+                />
+              </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Phone</span>
+                </label>
+                <input
+                  type="text"
+                  name="phone"
+                  value={formData.quantity || ""}
+                  onChange={handleInputChange}
+                  className="input input-bordered"
+                />
+              </div>
+            </form>
+            <div className="modal-action">
+              <button
+                className="btn btn-primary"
+                onClick={handleNewProductSave}
+              >
+                Save
+              </button>
+              <button className="btn" onClick={handleModalClose}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
         {/* Editable Form */}
-        <div className="border p-4 rounded">
+        <div className="border p-4 rounded flex flex-col gap-4">
           <h2 className="text-xl font-bold mb-4">Edit Invoice</h2>
           <div className="form-control">
             <label className="label">PO Number</label>
@@ -367,8 +498,79 @@ export default function Invoice() {
                   <td>{detail.quantity * products[detail.product]?.price}</td>
                 </tr>
               ))}
+              {addingProduct && (
+                <tr>
+                  <td>
+                    <select
+                      name="id"
+                      value={products[productToAdd.id]}
+                      onChange={(e) => handleProductChange(e)}
+                      className="select select-bordered text-wrap w-full"
+                    >
+                      <option value="" disabled>
+                        Select a product
+                      </option>
+                      {allProducts.map((product) => (
+                        <option key={product.id} value={product.id}>
+                          {product.name}
+                        </option>
+                      ))}
+
+                      <option
+                        value={products[productToAdd.id]}
+                        onClick={handleNewProduct}
+                      >
+                        new product
+                      </option>
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      name="quantity"
+                      type="number"
+                      step={1}
+                      value={productToAdd.quantity}
+                      onChange={(e) => handleProductChange(e)}
+                      className="input input-bordered w-20"
+                    />
+                  </td>
+
+                  <td>
+                    <input
+                      name="price"
+                      type="number"
+                      step={0.01}
+                      value={productToAdd.price}
+                      onChange={(e) => handleProductChange(e)}
+                      className="input input-bordered w-24"
+                    />
+                  </td>
+                  <td>{productToAdd.quantity * productToAdd.price}</td>
+                </tr>
+              )}
             </tbody>
           </table>
+          {addingProduct && (
+            <div className="w-full flex items-center justify-evenly {}">
+              <button className="btn btn-secondary" onClick={handleAddProduct}>
+                Confirm
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => setAddingProduct(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+          {!addingProduct && (
+            <button
+              className=" btn btn-secondary"
+              onClick={() => setAddingProduct(true)}
+            >
+              Add
+            </button>
+          )}
         </div>
 
         {/* PDF Preview */}
