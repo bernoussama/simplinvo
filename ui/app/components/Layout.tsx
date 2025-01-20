@@ -3,7 +3,7 @@ import NavBar from "./NavBar";
 
 export default function Layout() {
   return (
-    <div className="container">
+    <div className="w-full">
       <NavBar />
       <main className="container mx-auto">
         <Outlet />

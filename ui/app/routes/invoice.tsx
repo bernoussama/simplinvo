@@ -5,12 +5,14 @@ import { pb } from "@/lib/pocketbase";
 import { Order, OrderDetail, Client, Product } from "@/utils/schemas";
 import Protected from "@/components/Protected";
 import {
+  pdf,
   Page,
   Text,
   View,
   Document,
   PDFViewer,
   StyleSheet,
+  PDFDownloadLink,
 } from "@react-pdf/renderer";
 import { numberToWordsFrench } from "@/lib/utils";
 type IProduct = {
@@ -587,7 +589,7 @@ export default function Invoice() {
                       step=".01"
                       value={products[detail.product]?.price}
                       onChange={(e) => handlePriceChange(e, index)}
-                      className="input input-bordered w-24"
+                      className="input input-bordered w-24 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </td>
                   {/* <td>{products[detail.product]?.price}</td> */}
@@ -653,7 +655,7 @@ export default function Invoice() {
                       step={0.01}
                       value={productToAdd.price}
                       onChange={(e) => handleProductChange(e)}
-                      className="input input-bordered w-24"
+                      className="input input-bordered w-24 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </td>
                   <td>
@@ -689,8 +691,36 @@ export default function Invoice() {
         </div>
 
         {/* PDF Preview */}
-        <div className="border rounded h-[800px]">
-          <PDFViewer width="100%" height="100%">
+        <div className="border rounded h-[800px] flex flex-col gap-4 p-2">
+          <div className="flex justify-evenly w-full gap-4">
+            <button className="btn">
+              <PDFDownloadLink
+                document={<InvoicePDF />}
+                fileName={orderId + ".pdf"}
+              >
+                {({ blob, url, loading, error }) =>
+                  loading ? "Loading document..." : "Download"
+                }
+              </PDFDownloadLink>
+            </button>
+            {/* button to print InvoicePDF */}
+            <button
+              className="btn"
+              onClick={async () => {
+                const blob = await pdf(<InvoicePDF />).toBlob();
+                const url = URL.createObjectURL(blob);
+                const printWindow = window.open(url);
+                if (printWindow) {
+                  printWindow.onload = () => {
+                    printWindow.print();
+                  };
+                }
+              }}
+            >
+              Print
+            </button>
+          </div>
+          <PDFViewer width="100%" height="100%" className="rounded">
             <InvoicePDF />
           </PDFViewer>
         </div>

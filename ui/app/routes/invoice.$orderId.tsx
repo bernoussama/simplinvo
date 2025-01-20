@@ -11,8 +11,11 @@ import {
   Document,
   PDFViewer,
   StyleSheet,
+  PDFDownloadLink,
 } from "@react-pdf/renderer";
+
 import { numberToWordsFrench } from "@/lib/utils";
+
 type IProduct = {
   id: string;
   quantity: number;
@@ -471,7 +474,7 @@ export default function Invoice() {
                   name="price"
                   value={formData.price}
                   onChange={handleInputChange}
-                  className="input input-bordered"
+                  className="input input-bordered w-24 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
               <div className="form-control">
@@ -551,7 +554,7 @@ export default function Invoice() {
                       step=".01"
                       value={products[detail.product]?.price}
                       onChange={(e) => handlePriceChange(e, index)}
-                      className="input input-bordered w-24"
+                      className="input input-bordered w-24 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </td>
                   {/* <td>{products[detail.product]?.price}</td> */}
@@ -617,7 +620,7 @@ export default function Invoice() {
                       step={0.01}
                       value={productToAdd.price}
                       onChange={(e) => handleProductChange(e)}
-                      className="input input-bordered w-24"
+                      className="input input-bordered w-24 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </td>
                   <td>
@@ -653,7 +656,18 @@ export default function Invoice() {
         </div>
 
         {/* PDF Preview */}
-        <div className="border rounded h-[800px]">
+
+        <div className="border rounded h-[800px] flex">
+          <div>
+            <PDFDownloadLink
+              document={<InvoicePDF />}
+              fileName={orderId + ".pdf"}
+            >
+              {({ blob, url, loading, error }) =>
+                loading ? "Loading document..." : "Download now!"
+              }
+            </PDFDownloadLink>
+          </div>
           <PDFViewer width="100%" height="100%">
             <InvoicePDF />
           </PDFViewer>

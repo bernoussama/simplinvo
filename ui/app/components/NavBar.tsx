@@ -20,14 +20,16 @@ export default function NavBar() {
   }, []);
 
   const navigate = useNavigate();
+
   function logout() {
     console.log("logout");
     pb.authStore.clear();
     // reload the page
     navigate("/");
   }
+
   return (
-    <div className="navbar bg-base-100 shadow-sm">
+    <div className="navbar w-full bg-base-100 shadow-sm">
       <div className="navbar-start">
         <div className="dropdown">
           {/* small screen menu */}
