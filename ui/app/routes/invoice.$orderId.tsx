@@ -60,28 +60,36 @@ export default function Invoice() {
         .getOne(orderRecord.client);
       setClient(clientRecord);
 
-      const orderDetailsRecords = await pb
-        .collection("order_details")
-        .getFullList({
-          filter: `order="${orderId}"`,
-        });
-      setOrderDetails(orderDetailsRecords);
+      fetchOrderdetails();
 
-      const productIds = orderDetailsRecords.map((detail) => detail.product);
-      const productsRecords = await pb.collection("products").getFullList({
-        // filter: `id="${detail}"`,
-      });
-      setAllproducts(productsRecords);
-
-      const productsMap = productsRecords.reduce((map, product) => {
-        map[product.id] = product;
-        return map;
-      }, {});
-      setProducts(productsMap);
+      fetchProducts(orderDetails);
     };
 
     fetchOrder();
   }, [orderId]);
+
+  async function fetchOrderdetails() {
+    const orderDetailsRecords = await pb
+      .collection("order_details")
+      .getFullList({
+        filter: `order="${orderId}"`,
+      });
+    setOrderDetails(orderDetailsRecords);
+  }
+
+  const fetchProducts = async (orderDetailsRecords) => {
+    const productIds = orderDetailsRecords.map((detail) => detail.product);
+    const productsRecords = await pb.collection("products").getFullList({
+      // filter: `id="${detail}"`,
+    });
+    setAllproducts(productsRecords);
+
+    const productsMap = productsRecords.reduce((map, product) => {
+      map[product.id] = product;
+      return map;
+    }, {});
+    setProducts(productsMap);
+  };
 
   async function handleQuantityChange(
     e: React.ChangeEvent<HTMLInputElement>,
@@ -143,6 +151,7 @@ export default function Invoice() {
     console.log(data);
     const record = await pb.collection("order_details").create(data);
     console.log("product added: ", record);
+    fetchOrderdetails();
   }
 
   function handleNewProduct() {
@@ -469,7 +478,7 @@ export default function Invoice() {
                 <th>Product</th>
                 <th>Quantity</th>
                 <th>Price</th>
-                <th>Total</th>
+                <th className="text-right">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -495,7 +504,11 @@ export default function Invoice() {
                     />
                   </td>
                   {/* <td>{products[detail.product]?.price}</td> */}
-                  <td>{detail.quantity * products[detail.product]?.price}</td>
+                  <td className="text-right">
+                    {currency.format(
+                      detail.quantity * products[detail.product]?.price
+                    )}
+                  </td>
                 </tr>
               ))}
               {addingProduct && (
@@ -545,7 +558,11 @@ export default function Invoice() {
                       className="input input-bordered w-24"
                     />
                   </td>
-                  <td>{productToAdd.quantity * productToAdd.price}</td>
+                  <td>
+                    {currency.format(
+                      productToAdd.quantity * productToAdd.price
+                    )}
+                  </td>
                 </tr>
               )}
             </tbody>
