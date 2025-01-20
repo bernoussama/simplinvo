@@ -17,6 +17,12 @@ type IProduct = {
   quantity: number;
   price: number;
 };
+type NewProduct = {
+  id?: string;
+  name: string;
+  price: number;
+  quantity: number;
+};
 
 export default function Invoice() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -35,9 +41,16 @@ export default function Invoice() {
   });
   // modal stuff
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState<Partial<Product>>({});
+  const [formData, setFormData] = useState<Partial<NewProduct>>({
+    name: "product",
+    price: 1,
+    quantity: 1,
+  });
 
-  const currency = new Intl.NumberFormat();
+  const currency = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -155,7 +168,6 @@ export default function Invoice() {
   }
 
   function handleNewProduct() {
-    setFormData({});
     setIsModalOpen(true);
   }
 
@@ -168,6 +180,35 @@ export default function Invoice() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  async function handleNewProductSave() {
+    const productData = {
+      company: pb.authStore.record?.company,
+      name: formData.name,
+      price: Number(formData.price),
+    };
+    const productRecord = await pb.collection("products").create(productData);
+
+    const detailsData = {
+      company: pb.authStore.record?.company,
+      order: orderId,
+      product: productRecord.id,
+      quantity: Number(formData.quantity),
+    };
+    const detailsRecord = await pb
+      .collection("order_details")
+      .create(detailsData);
+    console.log(detailsRecord);
+    await fetchProducts(orderDetails);
+    await fetchOrderdetails();
+    setFormData({
+      name: "",
+      price: 1,
+      quantity: 1,
+    });
+    setIsModalOpen(false);
+    setAddingProduct(false);
+  }
 
   const handleProductChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -191,8 +232,6 @@ export default function Invoice() {
     setProductToAdd(newProduct);
     console.log("product to add: ", productToAdd);
   };
-
-  function handleNewProductSave() {}
 
   // Define PDF styles
   const styles = StyleSheet.create({
@@ -370,10 +409,9 @@ export default function Invoice() {
                   </Text>
                   <Text style={styles.column2}>{detail.quantity}</Text>
                   <Text style={styles.column3}>
-                    ${currency.format(products[detail.product]?.price)}
+                    {currency.format(products[detail.product]?.price)}
                   </Text>
                   <Text style={styles.column4}>
-                    $
                     {currency.format(
                       detail.quantity * (products[detail.product]?.price || 0)
                     )}
@@ -385,7 +423,7 @@ export default function Invoice() {
             {/* Total */}
             <View style={styles.total}>
               <Text style={styles.totalLabel}>Total:</Text>
-              <Text style={styles.totalAmount}>${currency.format(total)}</Text>
+              <Text style={styles.totalAmount}>{currency.format(total)}</Text>
             </View>
           </View>
         </Page>
@@ -417,9 +455,9 @@ export default function Invoice() {
                   <span className="label-text">Price</span>
                 </label>
                 <input
-                  type="price"
+                  type="number"
                   name="price"
-                  value={formData.price || ""}
+                  value={formData.price}
                   onChange={handleInputChange}
                   className="input input-bordered"
                 />
@@ -429,9 +467,9 @@ export default function Invoice() {
                   <span className="label-text">Phone</span>
                 </label>
                 <input
-                  type="text"
-                  name="phone"
-                  value={formData.quantity || ""}
+                  type="number"
+                  name="quantity"
+                  value={formData.quantity}
                   onChange={handleInputChange}
                   className="input input-bordered"
                 />
@@ -450,6 +488,7 @@ export default function Invoice() {
             </div>
           </div>
         </div>
+
         {/* Editable Form */}
         <div className="border p-4 rounded flex flex-col gap-4">
           <h2 className="text-xl font-bold mb-4">Edit Invoice</h2>
@@ -508,6 +547,17 @@ export default function Invoice() {
                     {currency.format(
                       detail.quantity * products[detail.product]?.price
                     )}
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-error"
+                      onClick={async () => {
+                        await pb.collection("order_details").delete(detail.id);
+                        fetchOrderdetails();
+                      }}
+                    >
+                      delete
+                    </button>
                   </td>
                 </tr>
               ))}
