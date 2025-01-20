@@ -12,6 +12,18 @@ import {
   PDFViewer,
   StyleSheet,
 } from "@react-pdf/renderer";
+import { numberToWordsFrench } from "@/lib/utils";
+type IProduct = {
+  id: string;
+  quantity: number;
+  price: number;
+};
+type NewProduct = {
+  id?: string;
+  name: string;
+  price: number;
+  quantity: number;
+};
 
 export default function Invoice() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -19,37 +31,79 @@ export default function Invoice() {
   const [orderDetails, setOrderDetails] = useState<OrderDetail[]>([]);
   const [client, setClient] = useState<Client | null>(null);
   const [products, setProducts] = useState<{ [key: string]: Product }>({});
+  const [company, setCompany] = useState(null);
+
+  const [allProducts, setAllproducts] = useState<Product[]>([]);
+  const [addingProduct, setAddingProduct] = useState(false);
+  const [productToAdd, setProductToAdd] = useState<IProduct>({
+    id: "product",
+    quantity: 1,
+    price: 1,
+  });
+  // modal stuff
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState<Partial<NewProduct>>({
+    name: "product",
+    price: 1,
+    quantity: 1,
+  });
+
+  const currency = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   useEffect(() => {
     const fetchOrder = async () => {
+      const companyId = pb.authStore.record?.company;
+      const companyRecord = await pb
+        .collection("Companies")
+        .getOne(companyId, { fields: "name,country,city,ice" });
+
+      setCompany(companyRecord);
       const orderRecord = await pb.collection("orders").getOne(orderId);
-      setOrder(orderRecord);
+      setOrder({
+        ...orderRecord,
+        date: orderRecord.date
+          ? new Date(orderRecord.date).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+      });
 
       const clientRecord = await pb
         .collection("clients")
         .getOne(orderRecord.client);
       setClient(clientRecord);
 
-      const orderDetailsRecords = await pb
-        .collection("order_details")
-        .getFullList({
-          filter: `order="${orderId}"`,
-        });
-      setOrderDetails(orderDetailsRecords);
+      fetchOrderdetails();
 
-      const productIds = orderDetailsRecords.map((detail) => detail.product);
-      const productsRecords = await pb.collection("products").getFullList({
-        // filter: `id="${detail}"`,
-      });
-      const productsMap = productsRecords.reduce((map, product) => {
-        map[product.id] = product;
-        return map;
-      }, {});
-      setProducts(productsMap);
+      fetchProducts(orderDetails);
     };
 
     fetchOrder();
   }, [orderId]);
+
+  async function fetchOrderdetails() {
+    const orderDetailsRecords = await pb
+      .collection("order_details")
+      .getFullList({
+        filter: `order="${orderId}"`,
+      });
+    setOrderDetails(orderDetailsRecords);
+  }
+
+  const fetchProducts = async (orderDetailsRecords) => {
+    const productIds = orderDetailsRecords.map((detail) => detail.product);
+    const productsRecords = await pb.collection("products").getFullList({
+      // filter: `id="${detail}"`,
+    });
+    setAllproducts(productsRecords);
+
+    const productsMap = productsRecords.reduce((map, product) => {
+      map[product.id] = product;
+      return map;
+    }, {});
+    setProducts(productsMap);
+  };
 
   async function handleQuantityChange(
     e: React.ChangeEvent<HTMLInputElement>,
@@ -93,20 +147,132 @@ export default function Invoice() {
     return <div>Loading...</div>;
   }
 
+  async function handleAddProduct() {
+    // event: MouseEvent<HTMLButtonElement, MouseEvent>
+    // setFormData({});
+    // setIsModalOpen(true);
+    // setAddingProduct(true);
+    //
+    console.log(productToAdd);
+
+    const data = {
+      company: pb.authStore.record?.company,
+      order: orderId,
+      product: productToAdd.id,
+      quantity: Number(productToAdd.quantity),
+    };
+
+    console.log(data);
+    const record = await pb.collection("order_details").create(data);
+    console.log("product added: ", record);
+    fetchOrderdetails();
+  }
+
+  function handleNewProduct() {
+    setIsModalOpen(true);
+  }
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setFormData({});
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  async function handleNewProductSave() {
+    const productData = {
+      company: pb.authStore.record?.company,
+      name: formData.name,
+      price: Number(formData.price),
+    };
+    const productRecord = await pb.collection("products").create(productData);
+
+    const detailsData = {
+      company: pb.authStore.record?.company,
+      order: orderId,
+      product: productRecord.id,
+      quantity: Number(formData.quantity),
+    };
+    const detailsRecord = await pb
+      .collection("order_details")
+      .create(detailsData);
+    console.log(detailsRecord);
+    await fetchProducts(orderDetails);
+    await fetchOrderdetails();
+    setFormData({
+      name: "",
+      price: 1,
+      quantity: 1,
+    });
+    setIsModalOpen(false);
+    setAddingProduct(false);
+  }
+
+  const handleProductChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    console.log(name, value);
+    const newProduct = { ...productToAdd };
+    switch (name) {
+      case "id":
+        newProduct.id = value;
+        break;
+      case "quantity":
+        newProduct.quantity = parseInt(value);
+        break;
+      case "price":
+        newProduct.price = parseFloat(value);
+        break;
+      default:
+        break;
+    }
+    setProductToAdd(newProduct);
+    console.log("product to add: ", productToAdd);
+  };
+
   // Define PDF styles
   const styles = StyleSheet.create({
     page: {
       padding: 30,
+      paddingTop: 120,
       fontSize: 12,
     },
     header: {
-      fontSize: 24,
+      flexDirection: "row",
       marginBottom: 20,
-      color: "#374151",
+      justifyContent: "space-between",
     },
     clientInfo: {
+      textAlign: "center",
+      flexDirection: "column",
+      justifyContent: "space-between",
+      gap: 10,
+      width: "45%",
+      padding: "8px",
       fontSize: 14,
       marginBottom: 20,
+      borderWidth: 1,
+      borderColor: "#000",
+      borderRadius: 8, // Add this for rounded corners
+      overflow: "hidden", // This is important to make borderRadius work
+    },
+
+    companyInfo: {
+      textAlign: "center",
+      flexDirection: "column",
+      justifyContent: "space-evenly",
+      width: "45%",
+      padding: "8px",
+      fontSize: 14,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: "#000",
+      borderRadius: 8, // Add this for rounded corners
+      overflow: "hidden", // This is important to make borderRadius work
     },
     infoRow: {
       flexDirection: "row",
@@ -116,25 +282,6 @@ export default function Invoice() {
       width: 60,
       fontWeight: "bold",
     },
-    // table: {
-    //   marginTop: 20,
-    //   borderWidth: 1,
-    //   borderColor: "#000",
-    // },
-    // tableHeader: {
-    //   flexDirection: "row",
-    //   borderBottomWidth: 1,
-    //   borderColor: "#000",
-    //   backgroundColor: "#f3f4f6",
-    //   padding: 8,
-    //   fontWeight: "bold",
-    // },
-    // tableRow: {
-    //   flexDirection: "row",
-    //   borderBottomWidth: 1,
-    //   borderColor: "#000",
-    //   padding: 8,
-    // },
     column1: { width: "40%" },
     column2: { width: "20%", textAlign: "center" },
     column3: { width: "20%", textAlign: "right" },
@@ -170,7 +317,7 @@ export default function Invoice() {
     },
     tableRow: {
       flexDirection: "row",
-      borderBottomWidth: 1,
+      // borderBottomWidth: 1,
       borderColor: "#000",
       padding: 8,
     },
@@ -189,25 +336,54 @@ export default function Invoice() {
         sum + detail.quantity * (products[detail.product]?.price || 0),
       0
     );
+    const totalDecimals = (total % 1).toFixed(2).split(".")[1];
 
     return (
       <Document>
         <Page size="A4" style={styles.page}>
           <View>
-            <Text style={styles.header}>Invoice #{order.id}</Text>
+            {/* <Text style={styles.header}>Invoice {order.id}</Text> */}
 
-            <View style={styles.clientInfo}>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Client:</Text>
+            <View style={styles.header}>
+              <View style={styles.companyInfo}>
+                <Text>{company?.name}</Text>
+                <Text>{company?.city}</Text>
+                <Text>{company?.country}</Text>
+              </View>
+
+              <View style={styles.clientInfo}>
                 <Text>{client.name}</Text>
+                <Text>{client.address}</Text>
+                <Text>ice: {client.ice}</Text>
               </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>PO:</Text>
-                <Text>{order.po}</Text>
+            </View>
+
+            <View style={styles.table}>
+              {/* Table Header */}
+              <View style={styles.tableHeader}>
+                <Text style={{ width: "25%", textAlign: "center" }}>
+                  Invoice
+                </Text>
+                <Text style={{ width: "25%", textAlign: "center" }}>Date</Text>
+                <Text style={{ width: "25%", textAlign: "center" }}>
+                  Client
+                </Text>
+                <Text style={{ width: "25%", textAlign: "center" }}>PO</Text>
               </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Date:</Text>
-                <Text>{new Date(order.date).toLocaleDateString()}</Text>
+
+              <View style={styles.tableRowLast}>
+                <Text style={{ width: "25%", textAlign: "center" }}>
+                  {order.id}
+                </Text>
+                <Text style={{ width: "25%", textAlign: "center" }}>
+                  {new Date(order.date).toLocaleDateString()}
+                </Text>
+                <Text style={{ width: "25%", textAlign: "center" }}>
+                  {client.name}
+                </Text>
+                <Text style={{ width: "25%", textAlign: "center" }}>
+                  {order.po}
+                </Text>
               </View>
             </View>
 
@@ -235,13 +411,12 @@ export default function Invoice() {
                   </Text>
                   <Text style={styles.column2}>{detail.quantity}</Text>
                   <Text style={styles.column3}>
-                    ${products[detail.product]?.price.toFixed(2)}
+                    {currency.format(products[detail.product]?.price)}
                   </Text>
                   <Text style={styles.column4}>
-                    $
-                    {(
+                    {currency.format(
                       detail.quantity * (products[detail.product]?.price || 0)
-                    ).toFixed(2)}
+                    )}
                   </Text>
                 </View>
               ))}
@@ -250,7 +425,17 @@ export default function Invoice() {
             {/* Total */}
             <View style={styles.total}>
               <Text style={styles.totalLabel}>Total:</Text>
-              <Text style={styles.totalAmount}>${total.toFixed(2)}</Text>
+              <Text style={styles.totalAmount}>{currency.format(total)}</Text>
+            </View>
+            <View>
+              <Text>
+                {numberToWordsFrench(total) + " dirhams"}
+                {Number(totalDecimals) > 0
+                  ? " et " +
+                    numberToWordsFrench(Number(totalDecimals)) +
+                    " centimes."
+                  : ""}
+              </Text>
             </View>
           </View>
         </Page>
@@ -261,8 +446,63 @@ export default function Invoice() {
   return (
     <Protected>
       <div className="container mx-auto p-4 grid grid-cols-2 gap-4">
+        <div className={`modal ${isModalOpen ? "modal-open" : ""}`}>
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">New Client</h3>
+            <form>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Name</span>
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name || ""}
+                  onChange={handleInputChange}
+                  className="input input-bordered"
+                />
+              </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Price</span>
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  className="input input-bordered"
+                />
+              </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Phone</span>
+                </label>
+                <input
+                  type="number"
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  className="input input-bordered"
+                />
+              </div>
+            </form>
+            <div className="modal-action">
+              <button
+                className="btn btn-primary"
+                onClick={handleNewProductSave}
+              >
+                Save
+              </button>
+              <button className="btn" onClick={handleModalClose}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Editable Form */}
-        <div className="border p-4 rounded">
+        <div className="border p-4 rounded flex flex-col gap-4">
           <h2 className="text-xl font-bold mb-4">Edit Invoice</h2>
           <div className="form-control">
             <label className="label">PO Number</label>
@@ -289,7 +529,7 @@ export default function Invoice() {
                 <th>Product</th>
                 <th>Quantity</th>
                 <th>Price</th>
-                <th>Total</th>
+                <th className="text-right">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -315,11 +555,101 @@ export default function Invoice() {
                     />
                   </td>
                   {/* <td>{products[detail.product]?.price}</td> */}
-                  <td>{detail.quantity * products[detail.product]?.price}</td>
+                  <td className="text-right">
+                    {currency.format(
+                      detail.quantity * products[detail.product]?.price
+                    )}
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-error"
+                      onClick={async () => {
+                        await pb.collection("order_details").delete(detail.id);
+                        fetchOrderdetails();
+                      }}
+                    >
+                      delete
+                    </button>
+                  </td>
                 </tr>
               ))}
+              {addingProduct && (
+                <tr>
+                  <td>
+                    <select
+                      name="id"
+                      value={products[productToAdd.id]}
+                      onChange={(e) => handleProductChange(e)}
+                      className="select select-bordered text-wrap w-full"
+                    >
+                      <option value="" disabled>
+                        Select a product
+                      </option>
+                      {allProducts.map((product) => (
+                        <option key={product.id} value={product.id}>
+                          {product.name}
+                        </option>
+                      ))}
+
+                      <option
+                        value={products[productToAdd.id]}
+                        onClick={handleNewProduct}
+                      >
+                        new product
+                      </option>
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      name="quantity"
+                      type="number"
+                      step={1}
+                      value={productToAdd.quantity}
+                      onChange={(e) => handleProductChange(e)}
+                      className="input input-bordered w-20"
+                    />
+                  </td>
+
+                  <td>
+                    <input
+                      name="price"
+                      type="number"
+                      step={0.01}
+                      value={productToAdd.price}
+                      onChange={(e) => handleProductChange(e)}
+                      className="input input-bordered w-24"
+                    />
+                  </td>
+                  <td>
+                    {currency.format(
+                      productToAdd.quantity * productToAdd.price
+                    )}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
+          {addingProduct && (
+            <div className="w-full flex items-center justify-evenly {}">
+              <button className="btn btn-secondary" onClick={handleAddProduct}>
+                Confirm
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => setAddingProduct(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+          {!addingProduct && (
+            <button
+              className=" btn btn-secondary"
+              onClick={() => setAddingProduct(true)}
+            >
+              Add
+            </button>
+          )}
         </div>
 
         {/* PDF Preview */}
