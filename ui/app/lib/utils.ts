@@ -165,7 +165,7 @@ export function numberToWordsFrench(n: number): string | boolean {
 
   // Get the result by translating the given number
   const result = translate(n);
-  return result.trim() + ".";
+  return result.trim();
 }
 
 let n = 1002.9;

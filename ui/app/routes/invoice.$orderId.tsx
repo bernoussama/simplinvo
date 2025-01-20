@@ -12,6 +12,7 @@ import {
   PDFViewer,
   StyleSheet,
 } from "@react-pdf/renderer";
+import { numberToWordsFrench } from "@/lib/utils";
 type IProduct = {
   id: string;
   quantity: number;
@@ -335,6 +336,7 @@ export default function Invoice() {
         sum + detail.quantity * (products[detail.product]?.price || 0),
       0
     );
+    const totalDecimals = (total % 1).toFixed(2).split(".")[1];
 
     return (
       <Document>
@@ -424,6 +426,16 @@ export default function Invoice() {
             <View style={styles.total}>
               <Text style={styles.totalLabel}>Total:</Text>
               <Text style={styles.totalAmount}>{currency.format(total)}</Text>
+            </View>
+            <View>
+              <Text>
+                {numberToWordsFrench(total) + " dirhams"}
+                {Number(totalDecimals) > 0
+                  ? " et " +
+                    numberToWordsFrench(Number(totalDecimals)) +
+                    " centimes."
+                  : ""}
+              </Text>
             </View>
           </View>
         </Page>
