@@ -167,20 +167,3 @@ export function numberToWordsFrench(n: number): string | boolean {
   const result = translate(n);
   return result.trim();
 }
-
-let n = 1002.9;
-console.log("Number n = " + n);
-console.log("In word: " + numberToWords(n));
-console.log("In French: " + numberToWordsFrench(n));
-n = 1279;
-console.log("Number n = " + n);
-console.log("In word: " + numberToWords(n));
-console.log("In French: " + numberToWordsFrench(n));
-n = 127900;
-console.log("Number n = " + n);
-console.log("In word: " + numberToWords(n));
-console.log("In French: " + numberToWordsFrench(n));
-n = 1279000;
-console.log("Number n = " + n);
-console.log("In word: " + numberToWords(n));
-console.log("In French: " + numberToWordsFrench(n));
