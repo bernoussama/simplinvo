@@ -7,6 +7,7 @@ import Protected from "@/components/Protected";
 import {
   pdf,
   Page,
+  Image,
   Text,
   View,
   Document,
@@ -52,6 +53,8 @@ export default function Invoice() {
     quantity: 1,
   });
 
+  const [entete, setEntete] = useState(true);
+
   useEffect(() => {
     async function fetchIds() {
       const orders = await pb
@@ -68,7 +71,7 @@ export default function Invoice() {
       }
     }
     fetchIds();
-  }, []);
+  }, [paramId]);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -165,11 +168,6 @@ export default function Invoice() {
   }
 
   async function handleAddProduct() {
-    // event: MouseEvent<HTMLButtonElement, MouseEvent>
-    // setFormData({});
-    // setIsModalOpen(true);
-    // setAddingProduct(true);
-    //
     console.log(productToAdd);
 
     const data = {
@@ -183,6 +181,7 @@ export default function Invoice() {
     const record = await pb.collection("order_details").create(data);
     console.log("product added: ", record);
     fetchOrderdetails();
+    setAddingProduct(false);
   }
 
   function handleNewProduct() {
@@ -253,9 +252,21 @@ export default function Invoice() {
 
   // Define PDF styles
   const styles = StyleSheet.create({
+    pageBackground: {
+      top: "0",
+      left: "0",
+      position: "absolute",
+      minWidth: "100%",
+      minHeight: "100%",
+      maxHeight: "100%",
+      maxWidth: "100%",
+      // display: 'block',
+      height: "100%",
+      width: "100%",
+    },
     page: {
       padding: 30,
-      paddingTop: 120,
+      paddingTop: 150,
       fontSize: 12,
     },
     header: {
@@ -357,102 +368,109 @@ export default function Invoice() {
 
     return (
       <Document>
-        <Page size="A4" style={styles.page}>
-          <View>
-            {/* <Text style={styles.header}>Invoice {order.id}</Text> */}
+        <Page size="A4">
+          <View style={styles.pageBackground}>
+            {entete && (
+              <Image src="/entete.png" style={styles.pageBackground} />
+            )}
+            <View style={styles.page}>
+              {/* <Text style={styles.header}>Invoice {order.id}</Text> */}
 
-            <View style={styles.header}>
-              <View style={styles.companyInfo}>
-                <Text>{company?.name}</Text>
-                <Text>{company?.city}</Text>
-                <Text>{company?.country}</Text>
+              <View style={styles.header}>
+                <View style={styles.companyInfo}>
+                  <Text>{company?.name}</Text>
+                  <Text>{company?.city}</Text>
+                  <Text>{company?.country}</Text>
+                </View>
+
+                <View style={styles.clientInfo}>
+                  <Text>{client.name}</Text>
+                  <Text>{client.address}</Text>
+                  <Text>ice: {client.ice}</Text>
+                </View>
               </View>
 
-              <View style={styles.clientInfo}>
-                <Text>{client.name}</Text>
-                <Text>{client.address}</Text>
-                <Text>ice: {client.ice}</Text>
-              </View>
-            </View>
-
-            <View style={styles.table}>
-              {/* Table Header */}
-              <View style={styles.tableHeader}>
-                <Text style={{ width: "25%", textAlign: "center" }}>
-                  Invoice
-                </Text>
-                <Text style={{ width: "25%", textAlign: "center" }}>Date</Text>
-                <Text style={{ width: "25%", textAlign: "center" }}>
-                  Client
-                </Text>
-                <Text style={{ width: "25%", textAlign: "center" }}>PO</Text>
-              </View>
-
-              <View style={styles.tableRowLast}>
-                <Text style={{ width: "25%", textAlign: "center" }}>
-                  {order.id}
-                </Text>
-                <Text style={{ width: "25%", textAlign: "center" }}>
-                  {new Date(order.date).toLocaleDateString()}
-                </Text>
-                <Text style={{ width: "25%", textAlign: "center" }}>
-                  {client.name}
-                </Text>
-                <Text style={{ width: "25%", textAlign: "center" }}>
-                  {order.po}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.table}>
-              {/* Table Header */}
-              <View style={styles.tableHeader}>
-                <Text style={styles.column1}>Product</Text>
-                <Text style={styles.column2}>Quantity</Text>
-                <Text style={styles.column3}>Price</Text>
-                <Text style={styles.column4}>Total</Text>
-              </View>
-
-              {/* Table Rows */}
-              {orderDetails.map((detail, index) => (
-                <View
-                  key={detail.id}
-                  style={
-                    index === orderDetails.length - 1
-                      ? styles.tableRowLast
-                      : styles.tableRow
-                  }
-                >
-                  <Text style={styles.column1}>
-                    {products[detail.product]?.name}
+              <View style={styles.table}>
+                {/* Table Header */}
+                <View style={styles.tableHeader}>
+                  <Text style={{ width: "25%", textAlign: "center" }}>
+                    Invoice
                   </Text>
-                  <Text style={styles.column2}>{detail.quantity}</Text>
-                  <Text style={styles.column3}>
-                    {currency.format(products[detail.product]?.price)}
+                  <Text style={{ width: "25%", textAlign: "center" }}>
+                    Date
                   </Text>
-                  <Text style={styles.column4}>
-                    {currency.format(
-                      detail.quantity * (products[detail.product]?.price || 0)
-                    )}
+                  <Text style={{ width: "25%", textAlign: "center" }}>
+                    Client
+                  </Text>
+                  <Text style={{ width: "25%", textAlign: "center" }}>PO</Text>
+                </View>
+
+                <View style={styles.tableRowLast}>
+                  <Text style={{ width: "25%", textAlign: "center" }}>
+                    {order.id}
+                  </Text>
+                  <Text style={{ width: "25%", textAlign: "center" }}>
+                    {new Date(order.date).toLocaleDateString()}
+                  </Text>
+                  <Text style={{ width: "25%", textAlign: "center" }}>
+                    {client.name}
+                  </Text>
+                  <Text style={{ width: "25%", textAlign: "center" }}>
+                    {order.po}
                   </Text>
                 </View>
-              ))}
-            </View>
+              </View>
 
-            {/* Total */}
-            <View style={styles.total}>
-              <Text style={styles.totalLabel}>Total:</Text>
-              <Text style={styles.totalAmount}>{currency.format(total)}</Text>
-            </View>
-            <View>
-              <Text>
-                {numberToWordsFrench(total) + " dirhams"}
-                {Number(totalDecimals) > 0
-                  ? " et " +
-                    numberToWordsFrench(Number(totalDecimals)) +
-                    " centimes."
-                  : ""}
-              </Text>
+              <View style={styles.table}>
+                {/* Table Header */}
+                <View style={styles.tableHeader}>
+                  <Text style={styles.column1}>Product</Text>
+                  <Text style={styles.column2}>Quantity</Text>
+                  <Text style={styles.column3}>Price</Text>
+                  <Text style={styles.column4}>Total</Text>
+                </View>
+
+                {/* Table Rows */}
+                {orderDetails.map((detail, index) => (
+                  <View
+                    key={detail.id}
+                    style={
+                      index === orderDetails.length - 1
+                        ? styles.tableRowLast
+                        : styles.tableRow
+                    }
+                  >
+                    <Text style={styles.column1}>
+                      {products[detail.product]?.name}
+                    </Text>
+                    <Text style={styles.column2}>{detail.quantity}</Text>
+                    <Text style={styles.column3}>
+                      {currency.format(products[detail.product]?.price)}
+                    </Text>
+                    <Text style={styles.column4}>
+                      {currency.format(
+                        detail.quantity * (products[detail.product]?.price || 0)
+                      )}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+
+              {/* Total */}
+              <View style={styles.total}>
+                <Text style={styles.totalLabel}>Total:</Text>
+                <Text style={styles.totalAmount}>{currency.format(total)}</Text>
+              </View>
+              <View>
+                <Text>
+                  {numberToWordsFrench(total) + " dirhams"}
+                  {Number(totalDecimals) > 0
+                    ? " et " +
+                      numberToWordsFrench(Number(totalDecimals)) +
+                      " centimes."
+                    : ""}
+                </Text>
+              </View>
             </View>
           </View>
         </Page>
@@ -659,11 +677,12 @@ export default function Invoice() {
                       className="input input-bordered w-24 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </td>
-                  <td>
+                  <td className="text-right">
                     {currency.format(
                       productToAdd.quantity * productToAdd.price
                     )}
                   </td>
+                  <td></td>
                 </tr>
               )}
             </tbody>
@@ -694,7 +713,16 @@ export default function Invoice() {
         {/* PDF Preview */}
         <div className="border rounded h-[800px] flex flex-col gap-4 p-2">
           <div className="flex justify-evenly w-full gap-4">
-            <button className="btn">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={entete}
+                onChange={() => setEntete(!entete)}
+                className="toggle toggle-secondary"
+              />
+              <span>Toggle Header</span>
+            </label>
+            <button className="btn btn-secondary">
               <PDFDownloadLink
                 document={<InvoicePDF />}
                 fileName={orderId + ".pdf"}
@@ -706,7 +734,7 @@ export default function Invoice() {
             </button>
             {/* button to print InvoicePDF */}
             <button
-              className="btn"
+              className="btn btn-secondary"
               onClick={async () => {
                 const blob = await pdf(<InvoicePDF />).toBlob();
                 const url = URL.createObjectURL(blob);

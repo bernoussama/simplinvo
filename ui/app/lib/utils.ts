@@ -97,40 +97,40 @@ export function numberToWordsFrench(n: number): string | boolean {
   // Arrays to hold words for single-digit, double-digit, and below-hundred numbers in French
   const single_digit = [
     "",
-    "Un",
-    "Deux",
-    "Trois",
-    "Quatre",
-    "Cinq",
-    "Six",
-    "Sept",
-    "Huit",
-    "Neuf",
+    "un",
+    "deux",
+    "trois",
+    "quatre",
+    "cinq",
+    "six",
+    "sept",
+    "huit",
+    "neuf",
   ];
   const double_digit = [
-    "Dix",
-    "Onze",
-    "Douze",
-    "Treize",
-    "Quatorze",
-    "Quinze",
-    "Seize",
-    "Dix-sept",
-    "Dix-huit",
-    "Dix-neuf",
+    "dix",
+    "onze",
+    "douze",
+    "treize",
+    "quatorze",
+    "quinze",
+    "seize",
+    "dix-sept",
+    "dix-huit",
+    "dix-neuf",
   ];
   const below_hundred = [
-    "Vingt",
-    "Trente",
-    "Quarante",
-    "Cinquante",
-    "Soixante",
-    "Soixante-dix",
-    "Quatre-vingt",
-    "Quatre-vingt-dix",
+    "vingt",
+    "trente",
+    "quarante",
+    "cinquante",
+    "soixante",
+    "soixante-dix",
+    "quatre-vingt",
+    "quatre-vingt-dix",
   ];
 
-  if (n === 0) return "Zéro";
+  if (n === 0) return "zéro";
 
   // Recursive function to translate the number into words in French
   function translate(n) {
@@ -146,12 +146,12 @@ export function numberToWordsFrench(n: number): string | boolean {
     } else if (n < 1000) {
       word =
         (Math.trunc(n / 100) > 1 ? single_digit[Math.trunc(n / 100)] : "") +
-        " Cent " +
+        " cent " +
         translate(n % 100);
     } else if (n < 1000000) {
       word =
         (Math.trunc(n / 1000) > 1 ? translate(parseInt(n / 1000)).trim() : "") +
-        " Mille " +
+        " mille " +
         translate(n % 1000);
     } else if (n < 1000000000) {
       word =
@@ -168,6 +168,7 @@ export function numberToWordsFrench(n: number): string | boolean {
   }
 
   // Get the result by translating the given number
-  const result = translate(n);
-  return result.trim();
+  const result = translate(n).trim();
+  // uppercase first letter
+  return result.charAt(0).toUpperCase() + result.slice(1);
 }

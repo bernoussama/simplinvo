@@ -39,11 +39,12 @@ export default function Join() {
   };
 
   return (
-    <>
-      <h2 className="card-title text-center text-2xl">Join</h2>
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="card w-96 shadow-xl">
+    <div className="container flex flex-col justify-center items-center gap-8 p-4 pt-8">
+      <h1 className="card-title text-center text-4xl">Simplinvo</h1>
+      <div className="flex justify-center items-center">
+        <div className="card w-96 shadow-xl bordered">
           <div className="card-body">
+            {/* <h1 className="card-title text-center text-2xl">Join</h1> */}
             <form onSubmit={handleSubmit}>
               <div className="form-control">
                 <label className="label">
@@ -96,9 +97,14 @@ export default function Join() {
                 <button className="btn btn-primary">Sign Up</button>
               </div>
             </form>
+            <div className="text-center">
+              <a href="/login" className="link link-primary">
+                Already have an account? Sign in
+              </a>
+            </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
