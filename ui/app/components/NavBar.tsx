@@ -73,6 +73,9 @@ export default function NavBar() {
             <li>
               <Link to="/invoices">Invoices</Link>
             </li>
+            <li>
+              <Link to="/invoice">Invoice Preview</Link>
+            </li>
           </ul>
         </div>
         {/* large screen nav */}
@@ -93,6 +96,9 @@ export default function NavBar() {
           </li>
           <li>
             <Link to="/invoices">Invoices</Link>
+          </li>
+          <li>
+            <Link to="/invoice">Invoice Preview</Link>
           </li>
         </ul>
       </div>

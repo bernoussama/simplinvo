@@ -14,7 +14,7 @@ import {
   StyleSheet,
   PDFDownloadLink,
 } from "@react-pdf/renderer";
-import { numberToWordsFrench } from "@/lib/utils";
+import { numberToWordsFrench, currency } from "@/lib/utils";
 type IProduct = {
   id: string;
   quantity: number;
@@ -28,8 +28,9 @@ type NewProduct = {
 };
 
 export default function Invoice() {
+  const paramId = useParams<{ orderId: string }>().orderId;
   const [orderIds, setOrderIds] = useState<string[]>([]);
-  const [orderId, setOrderId] = useState<string>();
+  const [orderId, setOrderId] = useState<string>("");
   const [order, setOrder] = useState<Order | null>(null);
   const [orderDetails, setOrderDetails] = useState<OrderDetail[]>([]);
   const [client, setClient] = useState<Client | null>(null);
@@ -51,11 +52,6 @@ export default function Invoice() {
     quantity: 1,
   });
 
-  const currency = new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-
   useEffect(() => {
     async function fetchIds() {
       const orders = await pb
@@ -64,7 +60,12 @@ export default function Invoice() {
 
       const ids = orders.map((order) => order.id);
       setOrderIds(ids);
-      setOrderId(ids[0]);
+
+      if (paramId) {
+        setOrderId(paramId);
+      } else {
+        setOrderId(ids[0]);
+      }
     }
     fetchIds();
   }, []);

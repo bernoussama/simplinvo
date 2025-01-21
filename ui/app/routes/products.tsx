@@ -4,6 +4,7 @@ import { pb } from "@/lib/pocketbase";
 import { MetaFunction } from "@remix-run/node";
 import { generateMockProducts, Product } from "@/utils/schemas";
 import Protected from "@/components/Protected";
+import { currency } from "@/lib/utils";
 
 export const meta: MetaFunction = () => {
   return [
@@ -67,6 +68,7 @@ export default function Products() {
 
       setEditingProductId(null);
       setFormData({});
+      setIsModalOpen(false);
     } catch (error) {
       console.error("Error updating product:", error);
     }
@@ -113,7 +115,7 @@ export default function Products() {
       <div className="flex flex-col items-center justify-center">
         <h1 className="text-3xl font-bold">Products</h1>
         <div className="flex justify-end w-full mb-4">
-          <button className="btn btn-primary" onClick={handleNewProductClick}>
+          <button className="btn btn-secondary" onClick={handleNewProductClick}>
             New
           </button>
         </div>
@@ -239,7 +241,7 @@ export default function Products() {
                         style={{ whiteSpace: "pre-wrap" }}
                       />
                     ) : (
-                      product.price
+                      currency.format(product.price)
                     )}
                   </td>
                   <td>
@@ -271,7 +273,7 @@ export default function Products() {
                       </div>
                     ) : (
                       <button
-                        className="btn btn-primary"
+                        className="btn btn-accent"
                         onClick={() => handleEditClick(product)}
                       >
                         Edit

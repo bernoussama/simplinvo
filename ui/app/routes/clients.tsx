@@ -128,7 +128,7 @@ export default function Clients() {
         <div className="flex justify-between w-full items-center my-8 px-4">
           <h1 className="text-3xl font-bold">Clients</h1>
 
-          <button className="btn btn-primary" onClick={handleNewClientClick}>
+          <button className="btn btn-secondary" onClick={handleNewClientClick}>
             New
           </button>
         </div>
@@ -420,7 +420,7 @@ export default function Clients() {
                         </div>
                       ) : (
                         <button
-                          className="btn btn-primary"
+                          className="btn btn-accent"
                           onClick={() => handleEditClick(client)}
                         >
                           Edit

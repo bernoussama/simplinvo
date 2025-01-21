@@ -208,24 +208,18 @@ export default function Dashboard() {
     <div>
       {/* <h1 className="text-3xl font-bold">Dashboard</h1> */}
       {loggedIn ? (
-        <div className="container p-2">
-          <h1 className="text-3xl font-bold">Welcome {username}</h1>
-          <div className="grid grid-cols-3 grid-rows-2 gap-4 p-2 max-h-screen">
-            <div className="card shadow-lg rounded-lg w-full max-h-screen mx-auto border">
-              <div className="bg-secondary w-full p-2 flex items-center justify-start rounded-t-lg h-16">
-                <h2 className="card-title">Sales by client</h2>
-              </div>
-              <div className="p-2 h-full">
-                <Doughnut options={options} data={doughnutData} />
-              </div>
-            </div>
+        <div className="container flex flex-col justify-start gap-4 p-4">
+          <div>
+            <h2 className="text-3xl font-bold">Welcome {username}</h2>
+          </div>
+          <div className="grid grid-cols-3 grid-rows-2 gap-4 max-h-screen">
             <div className="card shadow-lg rounded-lg w-full h-full mx-auto border col-span-2">
-              <div className="bg-secondary w-full p-2 flex justify-between items-center rounded-t-lg h-16">
-                <h2 className="card-title">Sales</h2>
+              <div className=" w-full p-2 flex justify-between items-center rounded-t-lg h-16 shadow-sm">
+                <h2 className="card-title ml-1">Sales</h2>
                 <select
                   id="year"
                   name="year"
-                  className="select"
+                  className="select select-bordered"
                   onChange={updateYear}
                 >
                   <option value={year}>{year}</option>
@@ -248,6 +242,14 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+            <div className="card shadow-lg rounded-lg w-full h-full max-h-screen mx-auto border">
+              <div className=" w-full p-2 flex items-center justify-start rounded-t-lg h-16 shadow-sm">
+                <h2 className="card-title">Sales by client</h2>
+              </div>
+              <div className="p-2 h-full">
+                <Doughnut options={options} data={doughnutData} />
               </div>
             </div>
           </div>

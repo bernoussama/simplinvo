@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { pb } from "@/lib/pocketbase";
 import { OrderSummary, Order, Client, Product } from "@/utils/schemas";
 import Protected from "@/components/Protected";
+import { currency } from "@/lib/utils";
 
 export const meta: MetaFunction = () => {
   return [
@@ -21,7 +22,7 @@ export default function Invoices() {
     po: "",
     client: "",
     date: "",
-    products: [{ product: "", quantity: 0 }],
+    products: [{ product: "", quantity: 1 }],
   });
   const [clients, setClients] = useState<Client[]>([]);
   const [clientMap, setClientMap] = useState<Record<string, string>>({});
@@ -154,6 +155,7 @@ export default function Invoices() {
   };
 
   const handleNewOrderSave = async () => {
+    console.log(formData.products);
     const orderData = {
       company: pb.authStore.record?.company,
       po: formData.po,
@@ -180,28 +182,26 @@ export default function Invoices() {
         )
       );
 
-      await Promise.all(
-        formData.products?.map((element) =>
-          pb.collection("order_details").create({
+      formData.products?.forEach(
+        async (element) =>
+          await pb.collection("order_details").create({
             company: pb.authStore.record?.company,
             order: editingOrderId,
             product: element.product,
             quantity: Number(element.quantity),
           })
-        ) || []
       );
     } else {
       const newOrder = await pb.collection("orders").create(orderData);
 
-      await Promise.all(
-        formData.products?.map((element) =>
-          pb.collection("order_details").create({
+      formData.products?.forEach(
+        async (element) =>
+          await pb.collection("order_details").create({
             company: pb.authStore.record?.company,
             order: newOrder.id,
             product: element.product,
             quantity: Number(element.quantity),
           })
-        ) || []
       );
     }
 
@@ -210,7 +210,7 @@ export default function Invoices() {
       po: "",
       client: "",
       date: "",
-      products: [{ product: "", quantity: 0 }],
+      products: [{ product: "", quantity: 1 }],
     });
     setIsModalOpen(false);
   };
@@ -220,7 +220,7 @@ export default function Invoices() {
       <div className="flex flex-col items-center justify-center">
         <div className="flex flex-row justify-between w-full mb-4 mt-4 p-4">
           <h1 className="text-3xl font-bold">Invoices</h1>
-          <button className="btn btn-primary" onClick={handleNewOrderClick}>
+          <button className="btn btn-secondary" onClick={handleNewOrderClick}>
             New
           </button>
         </div>
@@ -324,7 +324,10 @@ export default function Invoices() {
               </button>
             </form>
             <div className="modal-action">
-              <button className="btn btn-primary" onClick={handleNewOrderSave}>
+              <button
+                className="btn btn-secondary"
+                onClick={handleNewOrderSave}
+              >
                 Save
               </button>
               <button className="btn" onClick={handleCancelClick}>
@@ -353,10 +356,10 @@ export default function Invoices() {
                   <td>{clientMap[orderSummary.client]}</td>
                   <td>{orderSummary.date}</td>
                   <td>{orderSummary.po}</td>
-                  <td>{orderSummary.total}</td>
+                  <td>{currency.format(orderSummary.total)}</td>
                   <td>
                     <button
-                      className="btn btn-primary"
+                      className="btn btn-secondary"
                       onClick={() => handleEditClick(orderSummary)}
                     >
                       Edit
@@ -364,7 +367,7 @@ export default function Invoices() {
                   </td>
                   <td>
                     <button
-                      className="btn btn-primary"
+                      className="btn btn-accent"
                       onClick={() => handleShowClick(orderSummary)}
                     >
                       Show

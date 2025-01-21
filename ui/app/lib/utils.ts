@@ -1,3 +1,7 @@
+export const currency = new Intl.NumberFormat(undefined, {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 /**
  * Function to convert a given number into words.
  * @param {number} n - The number to be converted into words.
