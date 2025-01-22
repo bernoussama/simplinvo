@@ -49,6 +49,13 @@ export default function Invoices() {
       console.log("All order summaries:", allOrderSummaries);
     };
 
+    fetchOrderSummaries();
+  }, []);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+
+  useEffect(() => {
     const fetchClientsAndProducts = async () => {
       const clientsRecords = (await pb.collection("clients").getFullList({
         sort: "-created",
@@ -62,17 +69,14 @@ export default function Invoices() {
       setClientMap(newClientMap);
 
       const productsRecords = (await pb.collection("products").getFullList({
-        sort: "-created",
+        // sort: "-created",
       })) as unknown as Product[];
       setProducts(productsRecords);
     };
-
-    fetchOrderSummaries();
-    fetchClientsAndProducts();
-  }, []);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+    if (isModalOpen) {
+      fetchClientsAndProducts();
+    }
+  }, [isModalOpen]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
