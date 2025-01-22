@@ -49,14 +49,28 @@ export default function Invoices() {
       console.log("All order summaries:", allOrderSummaries);
     };
 
+    const fetchClients = async () => {
+      const clientsRecords = (await pb.collection("clients").getFullList({
+        sort: "-created",
+      })) as unknown as Client[];
+      setClients(clientsRecords);
+
+      const newClientMap: Record<string, string> = {};
+      clientsRecords.forEach((client) => {
+        newClientMap[client.id] = client.name;
+      });
+      setClientMap(newClientMap);
+    };
+
     fetchOrderSummaries();
+    fetchClients();
   }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchClientsAndProducts = async () => {
+    const fetchProducts = async () => {
       const clientsRecords = (await pb.collection("clients").getFullList({
         sort: "-created",
       })) as unknown as Client[];
@@ -74,7 +88,7 @@ export default function Invoices() {
       setProducts(productsRecords);
     };
     if (isModalOpen) {
-      fetchClientsAndProducts();
+      fetchProducts();
     }
   }, [isModalOpen]);
 
@@ -163,6 +177,8 @@ export default function Invoices() {
 
   const handleNewOrderSave = async () => {
     console.log("products: ", formData.products);
+
+    const batch = pb.createBatch();
     const orderData = {
       company: pb.authStore.record?.company,
       po: formData.po,
@@ -178,41 +194,39 @@ export default function Invoices() {
 
     if (editingOrderId) {
       console.log("editing order: ", editingOrderId);
-      await pb.collection("orders").update(editingOrderId, orderData);
+      batch.collection("orders").update(editingOrderId, orderData);
 
       const existingOrderDetails = await pb
         .collection("order_details")
         .getFullList({ filter: `order="${editingOrderId}"` });
 
-      await Promise.all(
-        existingOrderDetails.map((detail) =>
-          pb.collection("order_details").delete(detail.id)
-        )
+      existingOrderDetails.map((detail) =>
+        batch.collection("order_details").delete(detail.id)
       );
 
-      formData.products?.forEach(
-        async (element) =>
-          await pb.collection("order_details").create({
-            company: pb.authStore.record?.company,
-            order: editingOrderId,
-            product: element.product,
-            quantity: Number(element.quantity),
-          })
+      formData.products?.forEach((element) =>
+        batch.collection("order_details").create({
+          company: pb.authStore.record?.company,
+          order: editingOrderId,
+          product: element.product,
+          quantity: Number(element.quantity),
+        })
       );
       setEditingOrderId(null);
     } else {
       const newOrder = await pb.collection("orders").create(orderData);
 
-      formData.products?.forEach(
-        async (element) =>
-          await pb.collection("order_details").create({
-            company: pb.authStore.record?.company,
-            order: newOrder.id,
-            product: element.product,
-            quantity: Number(element.quantity),
-          })
+      formData.products?.forEach((element) =>
+        batch.collection("order_details").create({
+          company: pb.authStore.record?.company,
+          order: newOrder.id,
+          product: element.product,
+          quantity: Number(element.quantity),
+        })
       );
     }
+
+    const result = await batch.send();
 
     setFormData({
       company: "",
