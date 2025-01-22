@@ -71,9 +71,11 @@ export default function Invoices() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const clientsRecords = (await pb.collection("clients").getFullList({
-        sort: "-created",
-      })) as unknown as Client[];
+      const clientsRecords: Client[] = await pb
+        .collection("clients")
+        .getFullList({
+          sort: "-created",
+        });
       setClients(clientsRecords);
 
       const newClientMap: Record<string, string> = {};
@@ -82,9 +84,11 @@ export default function Invoices() {
       });
       setClientMap(newClientMap);
 
-      const productsRecords = (await pb.collection("products").getFullList({
-        // sort: "-created",
-      })) as unknown as Product[];
+      const productsRecords: Product[] = await pb
+        .collection("products")
+        .getFullList({
+          // sort: "-created",
+        });
       setProducts(productsRecords);
     };
     if (isModalOpen) {
