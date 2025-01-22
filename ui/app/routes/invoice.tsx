@@ -393,26 +393,26 @@ export default function Invoice() {
               <View style={styles.table}>
                 {/* Table Header */}
                 <View style={styles.tableHeader}>
-                  <Text style={{ width: "25%", textAlign: "center" }}>
+                  <Text style={{ width: "20%", textAlign: "center" }}>
                     Invoice
                   </Text>
-                  <Text style={{ width: "25%", textAlign: "center" }}>
+                  <Text style={{ width: "20%", textAlign: "center" }}>
                     Date
                   </Text>
-                  <Text style={{ width: "25%", textAlign: "center" }}>
+                  <Text style={{ width: "35%", textAlign: "center" }}>
                     Client
                   </Text>
                   <Text style={{ width: "25%", textAlign: "center" }}>PO</Text>
                 </View>
 
                 <View style={styles.tableRowLast}>
-                  <Text style={{ width: "25%", textAlign: "center" }}>
+                  <Text style={{ width: "20%", textAlign: "center" }}>
                     {order.id}
                   </Text>
-                  <Text style={{ width: "25%", textAlign: "center" }}>
+                  <Text style={{ width: "20%", textAlign: "center" }}>
                     {new Date(order.date).toLocaleDateString()}
                   </Text>
-                  <Text style={{ width: "25%", textAlign: "center" }}>
+                  <Text style={{ width: "35%", textAlign: "center" }}>
                     {client.name}
                   </Text>
                   <Text style={{ width: "25%", textAlign: "center" }}>
@@ -712,7 +712,7 @@ export default function Invoice() {
 
         {/* PDF Preview */}
         <div className="border rounded h-[800px] flex flex-col gap-4 p-2">
-          <div className="flex justify-evenly w-full gap-4">
+          <div className="flex justify-between w-full gap-4 px-4">
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -722,32 +722,34 @@ export default function Invoice() {
               />
               <span>Toggle Header</span>
             </label>
-            <button className="btn btn-secondary">
-              <PDFDownloadLink
-                document={<InvoicePDF />}
-                fileName={orderId + ".pdf"}
+            <div className="flex gap-2">
+              <button className="btn btn-secondary">
+                <PDFDownloadLink
+                  document={<InvoicePDF />}
+                  fileName={orderId + ".pdf"}
+                >
+                  {({ blob, url, loading, error }) =>
+                    loading ? "Loading document..." : "Download"
+                  }
+                </PDFDownloadLink>
+              </button>
+              {/* button to print InvoicePDF */}
+              <button
+                className="btn btn-secondary"
+                onClick={async () => {
+                  const blob = await pdf(<InvoicePDF />).toBlob();
+                  const url = URL.createObjectURL(blob);
+                  const printWindow = window.open(url);
+                  if (printWindow) {
+                    printWindow.onload = () => {
+                      printWindow.print();
+                    };
+                  }
+                }}
               >
-                {({ blob, url, loading, error }) =>
-                  loading ? "Loading document..." : "Download"
-                }
-              </PDFDownloadLink>
-            </button>
-            {/* button to print InvoicePDF */}
-            <button
-              className="btn btn-secondary"
-              onClick={async () => {
-                const blob = await pdf(<InvoicePDF />).toBlob();
-                const url = URL.createObjectURL(blob);
-                const printWindow = window.open(url);
-                if (printWindow) {
-                  printWindow.onload = () => {
-                    printWindow.print();
-                  };
-                }
-              }}
-            >
-              Print
-            </button>
+                Print
+              </button>
+            </div>
           </div>
           <PDFViewer width="100%" height="100%" className="rounded">
             <InvoicePDF />

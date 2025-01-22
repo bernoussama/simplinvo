@@ -5,6 +5,7 @@ import (
 	"os"
 	"simplinvo/api"
 	_ "simplinvo/migrations"
+	"simplinvo/ui"
 	"strings"
 
 	"github.com/pocketbase/pocketbase"
@@ -18,7 +19,10 @@ func main() {
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		// loosely check if it was executed using "go run"
 		// serves static files from the provided public dir (if exists)
-		se.Router.GET("/{path...}", apis.Static(os.DirFS("./ui/build/client/"), true))
+		// se.Router.GET("/{path...}", apis.Static(os.DirFS("./ui/build/client/"), true))
+
+		// serves static files from the embeded public dir (if exists)
+		se.Router.GET("/{path...}", apis.Static(ui.DistDirFS, true))
 		apiv1 := se.Router.Group("/api/v1")
 		apiv1.GET("/test", api.Test)
 

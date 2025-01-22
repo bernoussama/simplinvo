@@ -21,7 +21,7 @@ export default function Invoices() {
     company: "",
     po: "",
     client: "",
-    date: "",
+    date: new Date().toISOString().split("T")[0],
     products: [{ product: "", quantity: 1 }],
   });
   const [clients, setClients] = useState<Client[]>([]);
@@ -98,7 +98,7 @@ export default function Invoices() {
   const handleAddProduct = () => {
     setFormData((prev) => ({
       ...prev,
-      products: [...(prev.products || []), { product: "", quantity: 0 }],
+      products: [...(prev.products || []), { product: "", quantity: 1 }],
     }));
   };
 
@@ -114,8 +114,8 @@ export default function Invoices() {
       company: "",
       po: "",
       client: "",
-      date: "",
-      products: [{ product: "", quantity: 0 }],
+      date: new Date().toISOString().split("T")[0],
+      products: [{ product: "", quantity: 1 }],
     });
     setEditingOrderId(null);
     setIsModalOpen(true);
@@ -130,6 +130,9 @@ export default function Invoices() {
       date: "",
       products: [{ product: "", quantity: 0 }],
     });
+    if (editingOrderId) {
+      setEditingOrderId(null);
+    }
   };
 
   const handleEditClick = async (orderSummary: OrderSummary) => {
@@ -155,7 +158,7 @@ export default function Invoices() {
   };
 
   const handleNewOrderSave = async () => {
-    console.log(formData.products);
+    console.log("products: ", formData.products);
     const orderData = {
       company: pb.authStore.record?.company,
       po: formData.po,
@@ -170,6 +173,7 @@ export default function Invoices() {
     };
 
     if (editingOrderId) {
+      console.log("editing order: ", editingOrderId);
       await pb.collection("orders").update(editingOrderId, orderData);
 
       const existingOrderDetails = await pb
@@ -191,6 +195,7 @@ export default function Invoices() {
             quantity: Number(element.quantity),
           })
       );
+      setEditingOrderId(null);
     } else {
       const newOrder = await pb.collection("orders").create(orderData);
 
