@@ -36,19 +36,18 @@ export default function Invoices() {
     return records;
   }
 
+  const fetchOrderSummaries = async () => {
+    const allOrderSummaries = await getAllOrderSummaries();
+
+    setOrderSummaries(
+      allOrderSummaries.map((order) => ({
+        ...order,
+        date: order.date.split(" ")[0],
+      })) as OrderSummary[]
+    );
+  };
+
   useEffect(() => {
-    const fetchOrderSummaries = async () => {
-      const allOrderSummaries = await getAllOrderSummaries();
-
-      setOrderSummaries(
-        allOrderSummaries.map((order) => ({
-          ...order,
-          date: order.date.split(" ")[0],
-        })) as OrderSummary[]
-      );
-      console.log("All order summaries:", allOrderSummaries);
-    };
-
     const fetchClients = async () => {
       const clientsRecords = (await pb.collection("clients").getFullList({
         sort: "-created",
@@ -240,6 +239,8 @@ export default function Invoices() {
       products: [{ product: "", quantity: 1 }],
     });
     setIsModalOpen(false);
+
+    fetchOrderSummaries();
   };
 
   return (
