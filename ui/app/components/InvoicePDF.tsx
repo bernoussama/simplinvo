@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     top: "65%",
     left: "50%",
     position: "absolute",
-    height: "15%",
+    // height: "15%",
     width: "15%",
   },
   page: {
