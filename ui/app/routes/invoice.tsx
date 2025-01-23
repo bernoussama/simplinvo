@@ -1,21 +1,18 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { fetchHeaderImage, fetchStampImage, pb } from "@/lib/pocketbase";
-import { Order, OrderDetail, Client, Product } from "@/utils/schemas";
 import Protected from "@/components/Protected";
+import { fetchHeaderImage, fetchStampImage, pb } from "@/lib/pocketbase";
+import { currency } from "@/lib/utils";
+import { Client, Order, OrderDetail, Product } from "@/utils/schemas";
 import {
   pdf,
-  Page,
-  Image,
-  Text,
-  View,
-  Document,
+  PDFDownloadLink,
   PDFViewer,
   StyleSheet,
-  PDFDownloadLink,
 } from "@react-pdf/renderer";
-import { numberToWordsFrench, currency } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+
+import { InvoicePDF } from "@/components/InvoicePDF";
 type IProduct = {
   id: string;
   quantity: number;
@@ -375,126 +372,6 @@ export default function Invoice() {
     },
   });
 
-  const InvoicePDF = () => {
-    // Calculate total
-    const total = orderDetails.reduce(
-      (sum, detail) =>
-        sum + detail.quantity * (products[detail.product]?.price || 0),
-      0
-    );
-    const totalDecimals = (total % 1).toFixed(2).split(".")[1];
-
-    return (
-      <Document>
-        <Page size="A4">
-          <View style={styles.pageBackground}>
-            {entete && <Image src={headerUrl} style={styles.pageBackground} />}
-            <View style={styles.page}>
-              {/* <Text style={styles.header}>Invoice {order.id}</Text> */}
-
-              <View style={styles.header}>
-                <View style={styles.companyInfo}>
-                  <Text>{company?.name}</Text>
-                  <Text>{company?.city}</Text>
-                  <Text>{company?.country}</Text>
-                </View>
-
-                <View style={styles.clientInfo}>
-                  <Text>{client.name}</Text>
-                  <Text>{client.address}</Text>
-                  <Text>ice: {client.ice}</Text>
-                </View>
-              </View>
-
-              <View style={styles.table}>
-                {/* Table Header */}
-                <View style={styles.tableHeader}>
-                  <Text style={{ width: "20%", textAlign: "center" }}>
-                    Invoice
-                  </Text>
-                  <Text style={{ width: "20%", textAlign: "center" }}>
-                    Date
-                  </Text>
-                  <Text style={{ width: "35%", textAlign: "center" }}>
-                    Client
-                  </Text>
-                  <Text style={{ width: "25%", textAlign: "center" }}>PO</Text>
-                </View>
-
-                <View style={styles.tableRowLast}>
-                  <Text style={{ width: "20%", textAlign: "center" }}>
-                    {order.id}
-                  </Text>
-                  <Text style={{ width: "20%", textAlign: "center" }}>
-                    {new Date(order.date).toLocaleDateString()}
-                  </Text>
-                  <Text style={{ width: "35%", textAlign: "center" }}>
-                    {client.name}
-                  </Text>
-                  <Text style={{ width: "25%", textAlign: "center" }}>
-                    {order.po}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.table}>
-                {/* Table Header */}
-                <View style={styles.tableHeader}>
-                  <Text style={styles.column1}>Product</Text>
-                  <Text style={styles.column2}>Quantity</Text>
-                  <Text style={styles.column3}>Price</Text>
-                  <Text style={styles.column4}>Total</Text>
-                </View>
-
-                {/* Table Rows */}
-                {orderDetails.map((detail, index) => (
-                  <View
-                    key={detail.id}
-                    style={
-                      index === orderDetails.length - 1
-                        ? styles.tableRowLast
-                        : styles.tableRow
-                    }
-                  >
-                    <Text style={styles.column1}>
-                      {products[detail.product]?.name}
-                    </Text>
-                    <Text style={styles.column2}>{detail.quantity}</Text>
-                    <Text style={styles.column3}>
-                      {currency.format(products[detail.product]?.price)}
-                    </Text>
-                    <Text style={styles.column4}>
-                      {currency.format(
-                        detail.quantity * (products[detail.product]?.price || 0)
-                      )}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-
-              {/* Total */}
-              <View style={styles.total}>
-                <Text style={styles.totalLabel}>Total:</Text>
-                <Text style={styles.totalAmount}>{currency.format(total)}</Text>
-              </View>
-              <View>
-                <Text>
-                  {numberToWordsFrench(total) + " dirhams"}
-                  {Number(totalDecimals) > 0
-                    ? " et " +
-                      numberToWordsFrench(Number(totalDecimals)) +
-                      " centimes."
-                    : ""}
-                </Text>
-              </View>
-            </View>
-            {stamp && <Image src={stampUrl} style={styles.stamp} />}
-          </View>
-        </Page>
-      </Document>
-    );
-  };
-
   return (
     <Protected>
       <div className="container mx-auto p-4 grid grid-cols-2 gap-4">
@@ -752,7 +629,19 @@ export default function Invoice() {
             <div className="flex gap-2">
               <button className="btn btn-secondary">
                 <PDFDownloadLink
-                  document={<InvoicePDF />}
+                  document={
+                    <InvoicePDF
+                      order={order}
+                      client={client}
+                      company={company}
+                      orderDetails={orderDetails}
+                      products={products}
+                      entete={entete}
+                      stamp={stamp}
+                      headerUrl={headerUrl}
+                      stampUrl={stampUrl}
+                    />
+                  }
                   fileName={orderId + ".pdf"}
                 >
                   {({ blob, url, loading, error }) =>
@@ -764,7 +653,19 @@ export default function Invoice() {
               <button
                 className="btn btn-secondary"
                 onClick={async () => {
-                  const blob = await pdf(<InvoicePDF />).toBlob();
+                  const blob = await pdf(
+                    <InvoicePDF
+                      order={order}
+                      client={client}
+                      company={company}
+                      orderDetails={orderDetails}
+                      products={products}
+                      entete={entete}
+                      stamp={stamp}
+                      headerUrl={headerUrl}
+                      stampUrl={stampUrl}
+                    />
+                  ).toBlob();
                   const url = URL.createObjectURL(blob);
                   const printWindow = window.open(url);
                   if (printWindow) {
@@ -779,7 +680,17 @@ export default function Invoice() {
             </div>
           </div>
           <PDFViewer width="100%" height="100%" className="rounded">
-            <InvoicePDF />
+            <InvoicePDF
+              order={order}
+              client={client}
+              company={company}
+              orderDetails={orderDetails}
+              products={products}
+              entete={entete}
+              stamp={stamp}
+              headerUrl={headerUrl}
+              stampUrl={stampUrl}
+            />
           </PDFViewer>
         </div>
       </div>
