@@ -410,7 +410,7 @@ export default function Order({ invoiceId }: OrderProps) {
                   <td className="text-wrap">
                     <select
                       name="id"
-                      value={products[productToAdd.id].id}
+                      value={products[productToAdd.id]?.id}
                       onChange={(e) => handleProductChange(e)}
                       className="select select-bordered text-wrap w-full"
                     >
@@ -424,7 +424,7 @@ export default function Order({ invoiceId }: OrderProps) {
                       ))}
 
                       <option
-                        value={products[productToAdd.id]}
+                        value={products[productToAdd.id]?.id}
                         onClick={handleNewProduct}
                       >
                         new product
