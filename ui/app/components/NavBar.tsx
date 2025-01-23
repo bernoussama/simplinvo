@@ -7,12 +7,19 @@ import { useEffect, useState } from "react";
 
 export default function NavBar() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+  const [companyName, setCompanyName] = useState("");
 
   useEffect(() => {
     setLoggedIn(isLoggedIn());
     const unsubscribe = pb.authStore.onChange(() => {
       setLoggedIn(isLoggedIn());
     });
+    (async () => {
+      const record = await pb
+        .collection("companies")
+        .getOne(pb.authStore.record?.company);
+      setCompanyName(record.name);
+    })();
 
     return () => {
       unsubscribe();
@@ -103,6 +110,9 @@ export default function NavBar() {
         </ul>
       </div>
       <div className="navbar-end gap-4">
+        <Link to="/profile" className="btn btn-ghost">
+          {companyName}
+        </Link>
         <ThemeToggle />
         {loggedIn ? (
           <button className="btn" onClick={logout}>

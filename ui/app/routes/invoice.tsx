@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { pb } from "@/lib/pocketbase";
+import { fetchHeaderImage, fetchStampImage, pb } from "@/lib/pocketbase";
 import { Order, OrderDetail, Client, Product } from "@/utils/schemas";
 import Protected from "@/components/Protected";
 import {
@@ -37,6 +37,7 @@ export default function Invoice() {
   const [client, setClient] = useState<Client | null>(null);
   const [products, setProducts] = useState<{ [key: string]: Product }>({});
   const [company, setCompany] = useState(null);
+  const [companyId, setCompanyId] = useState("");
 
   const [allProducts, setAllproducts] = useState<Product[]>([]);
   const [addingProduct, setAddingProduct] = useState(false);
@@ -53,7 +54,10 @@ export default function Invoice() {
     quantity: 1,
   });
 
-  const [entete, setEntete] = useState(true);
+  const [entete, setEntete] = useState(false);
+  const [headerUrl, setHeaderUrl] = useState("");
+  const [stamp, setStamp] = useState(false);
+  const [stampUrl, setStampUrl] = useState("");
 
   useEffect(() => {
     async function fetchIds() {
@@ -70,8 +74,15 @@ export default function Invoice() {
         setOrderId(ids[0]);
       }
     }
+    setCompanyId(pb.authStore.record?.company);
     fetchIds();
-  }, [paramId]);
+    (async () => {
+      const url = await fetchHeaderImage(companyId);
+      const stamp = await fetchStampImage(companyId);
+      setHeaderUrl(url);
+      setStampUrl(stamp);
+    })();
+  }, [paramId, companyId]);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -264,9 +275,17 @@ export default function Invoice() {
       height: "100%",
       width: "100%",
     },
+    stamp: {
+      top: "65%",
+      left: "50%",
+      position: "absolute",
+      // display: 'block',
+      height: "15%",
+      width: "15%",
+    },
     page: {
       padding: 30,
-      paddingTop: 150,
+      paddingTop: 200,
       fontSize: 12,
     },
     header: {
@@ -339,7 +358,6 @@ export default function Invoice() {
       flexDirection: "row",
       borderBottomWidth: 1,
       borderColor: "#000",
-      backgroundColor: "#f3f4f6",
       padding: 8,
       fontWeight: "bold",
     },
@@ -370,9 +388,7 @@ export default function Invoice() {
       <Document>
         <Page size="A4">
           <View style={styles.pageBackground}>
-            {entete && (
-              <Image src="/entete.png" style={styles.pageBackground} />
-            )}
+            {entete && <Image src={headerUrl} style={styles.pageBackground} />}
             <View style={styles.page}>
               {/* <Text style={styles.header}>Invoice {order.id}</Text> */}
 
@@ -472,6 +488,7 @@ export default function Invoice() {
                 </Text>
               </View>
             </View>
+            {stamp && <Image src={stampUrl} style={styles.stamp} />}
           </View>
         </Page>
       </Document>
@@ -721,6 +738,16 @@ export default function Invoice() {
                 className="toggle toggle-secondary"
               />
               <span>Toggle Header</span>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={stamp}
+                onChange={() => setStamp(!stamp)}
+                className="toggle toggle-secondary"
+              />
+              <span>Toggle Stamp</span>
             </label>
             <div className="flex gap-2">
               <button className="btn btn-secondary">
