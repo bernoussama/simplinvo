@@ -1,6 +1,12 @@
 import pocketbase from "pocketbase";
+const isProd = import.meta.env.PROD;
+const apiUrl = isProd
+  ? import.meta.env.VITE_PB_API_URL
+  : "http://127.0.0.1:8090";
 
-export const pb = new pocketbase("http://127.0.0.1:8090");
+const baseURL = apiUrl;
+
+export const pb = new pocketbase(baseURL);
 
 export const currentUser = pb.authStore.record;
 export function getCurrentUser() {
