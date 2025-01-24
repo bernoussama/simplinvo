@@ -1,5 +1,5 @@
 # Build frontend
-FROM node:23 AS frontend-build
+FROM --platform=$BUILDPLATFORM node:23-alpine AS frontend-build
 
 WORKDIR /app
 COPY ui/package*.json ./
@@ -9,7 +9,7 @@ COPY ui/ .
 RUN npm run build
 
 # Build backend
-FROM golang:1.23.3 AS backend-build
+FROM --platform=$BUILDPLATFORM golang:1.23.3-alpine AS backend-build
 
 WORKDIR /app
 COPY go.mod go.sum ./
@@ -18,7 +18,8 @@ RUN go mod download
 COPY . .
 COPY --from=frontend-build /app/build ./ui/build
 
-RUN CGO_ENABLED=0 go build -o simplinvo .
+ARG TARGETARCH
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=$TARGETARCH go build -o simplinvo .
 
 # Final stage
 FROM alpine:3.18
