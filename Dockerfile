@@ -28,6 +28,6 @@ WORKDIR /app
 COPY --from=backend-build /app/simplinvo ./
 COPY --from=backend-build /app/ui/build ./ui/build
 
-EXPOSE 8090/tcp
+EXPOSE 8090
 
-ENTRYPOINT ["/app/simplinvo", "serve"]
+ENTRYPOINT ["/app/simplinvo", "serve", "--http=0.0.0.0:8090"]
