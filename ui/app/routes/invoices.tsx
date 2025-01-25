@@ -375,6 +375,7 @@ export default function Invoices() {
                 <th>PO</th>
                 <th>Total</th>
                 <th></th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -399,6 +400,31 @@ export default function Invoices() {
                       onClick={() => handleShowClick(orderSummary)}
                     >
                       Show
+                    </button>
+                  </td>
+
+                  <td>
+                    <button
+                      className="btn btn-error"
+                      onClick={async () => {
+                        const records = await pb
+                          .collection("order_details")
+                          .getFullList({
+                            filter: `order="${orderSummary.id}"`,
+                          });
+
+                        const batch = pb.createBatch();
+                        records.forEach((record) => {
+                          batch.collection("order_details").delete(record.id);
+                        });
+
+                        batch.collection("orders").delete(orderSummary.id);
+
+                        await batch.send();
+                        fetchOrderSummaries();
+                      }}
+                    >
+                      delete
                     </button>
                   </td>
                 </tr>

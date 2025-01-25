@@ -56,6 +56,7 @@ export interface OrderDetail {
 }
 
 export type OrderSummary = {
+  order: string;
   id: string;
   po: string;
   client: string;
