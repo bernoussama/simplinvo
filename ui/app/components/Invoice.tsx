@@ -25,7 +25,10 @@ interface OrderProps {
 
 export default function Order({ invoiceId }: OrderProps) {
   const [orderIds, setOrderIds] = useState<string[]>([]);
+  const [filteredOrderIds, setFilteredOrderIds] = useState<string[]>([]);
   const [orderId, setOrderId] = useState<string>(invoiceId);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [order, setOrder] = useState<OrderT | null>(null);
   const [orderDetails, setOrderDetails] = useState<OrderDetail[]>([]);
   const [client, setClient] = useState<Client | null>(null);
@@ -61,6 +64,7 @@ export default function Order({ invoiceId }: OrderProps) {
 
       const ids = orders.map((order) => order.id);
       setOrderIds(ids);
+      setFilteredOrderIds(ids);
 
       if (orderId == "") {
         setOrderId(ids[0]);
@@ -318,21 +322,48 @@ export default function Order({ invoiceId }: OrderProps) {
             {/* dropdown menu containing order ids that set orderId to the one selected */}
             <div className="form-control flex-row gap-2">
               <label className="label text-nowrap">Invoice ID</label>
-              <select
-                name="orderId"
-                value={orderId}
-                onChange={(e) => setOrderId(e.target.value)}
-                className="select select-bordered text-wrap w-full"
-              >
-                <option value="" disabled>
-                  Select an invoice
-                </option>
-                {orderIds.map((order) => (
-                  <option key={order} value={order}>
-                    {order}
-                  </option>
-                ))}
-              </select>
+              <div className="dropdown">
+                <div tabIndex={0} role="button">
+                  <input
+                    type="text"
+                    className="input input-bordered w-full"
+                    placeholder="Search invoice..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setIsDropdownOpen(true);
+                      setFilteredOrderIds(
+                        orderIds.filter((id) =>
+                          id
+                            .toLowerCase()
+                            .includes(e.target.value.toLowerCase())
+                        )
+                      );
+                    }}
+                    onFocus={() => setIsDropdownOpen(true)}
+                  />
+                </div>
+                {isDropdownOpen && filteredOrderIds.length > 0 && (
+                  <ul
+                    tabIndex={0}
+                    className="dropdown-content w-full gap-2 menu bg-base-100 rounded-box z-[1] p-2 shadow"
+                  >
+                    {filteredOrderIds.map((id) => (
+                      <li
+                        key={id}
+                        className="btn w-full"
+                        onClick={() => {
+                          setOrderId(id);
+                          setSearchTerm(id);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        {id}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
           </div>
 
