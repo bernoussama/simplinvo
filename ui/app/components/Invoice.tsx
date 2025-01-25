@@ -358,7 +358,7 @@ export default function Order({ invoiceId }: OrderProps) {
           <table className="table table-zebra w-full mt-4">
             <thead>
               <tr>
-                <th>Product</th>
+                <th colSpan={2}>Product</th>
                 <th>Quantity</th>
                 <th>Price</th>
                 <th className="text-right">Total</th>
@@ -367,7 +367,7 @@ export default function Order({ invoiceId }: OrderProps) {
             <tbody>
               {orderDetails.map((detail, index) => (
                 <tr key={detail.id}>
-                  <td>{products[detail.product]?.name}</td>
+                  <td colSpan={2}>{products[detail.product]?.name}</td>
                   <td>
                     <input
                       type="number"
@@ -407,7 +407,7 @@ export default function Order({ invoiceId }: OrderProps) {
               ))}
               {addingProduct && (
                 <tr className="text-wrap">
-                  <td className="text-wrap">
+                  <td colSpan={2} className="text-wrap">
                     <select
                       name="id"
                       value={products[productToAdd.id]?.id}
