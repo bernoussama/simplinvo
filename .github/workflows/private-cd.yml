@@ -4,7 +4,7 @@ on:
   # pull_request:
   # branches: [main]
   push:
-    branches: [main]
+    branches: [private]
     tags:
       - "*"
     paths-ignore:
@@ -60,7 +60,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            VITE_PB_API_URL=https://app.simplinvo.com
+            VITE_PB_API_URL=https://${{ secrets.API_URL }}
           # tags: |
           #   ghcr.io/bernoussama/mercury:latest
           #   ghcr.io/bernoussama/mercury:${{ github.sha }}
