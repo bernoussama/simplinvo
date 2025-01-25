@@ -27,6 +27,8 @@ async function getAllProducts() {
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Product>>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -35,11 +37,21 @@ export default function Products() {
     const fetchProducts = async () => {
       const allProducts = await getAllProducts();
       setProducts(allProducts as unknown as Product[]);
+      setFilteredProducts(allProducts as unknown as Product[]);
       console.log("All products:", allProducts);
     };
 
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    const filtered = products.filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredProducts(filtered);
+  }, [searchTerm, products]);
 
   const handleEditClick = (product: Product) => {
     setEditingProductId(product.id);
@@ -119,13 +131,22 @@ export default function Products() {
       <div className="flex flex-col items-center gap-2 justify-center">
         <div className="flex flex-row justify-between w-full mb-4 mt-4 p-4">
           <h1 className="text-3xl font-bold">Products</h1>
-          <div className="flex justify-end w-full mb-4">
-            <button
-              className="btn btn-secondary"
-              onClick={handleNewProductClick}
-            >
-              New
-            </button>
+          <div className="flex gap-2 justify-center items-center">
+            <input
+              type="text"
+              placeholder="Search products..."
+              className="input input-bordered"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <div className="flex justify-end w-full mb-4">
+              <button
+                className="btn btn-secondary"
+                onClick={handleNewProductClick}
+              >
+                New
+              </button>
+            </div>
           </div>
         </div>
         <div className={`modal ${isModalOpen ? "modal-open" : ""}`}>
@@ -208,7 +229,7 @@ export default function Products() {
               </tr>
             </thead>
             <tbody>
-              {products.map((product, index) => (
+              {filteredProducts.map((product, index) => (
                 <tr key={product.id}>
                   <th>{index + 1}</th>
                   <td>
