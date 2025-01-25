@@ -36,6 +36,6 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
     volumes:
       - pb_data:/app/pb_data
-  volumes:
-    pb_data:
-    letsencrypt:
+volumes:
+  pb_data:
+  letsencrypt:
