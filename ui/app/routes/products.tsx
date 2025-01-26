@@ -5,6 +5,8 @@ import { MetaFunction } from "@remix-run/node";
 import { generateMockProducts, Product } from "@/utils/schemas";
 import Protected from "@/components/Protected";
 import { currency } from "@/lib/utils";
+import ErrorAlert from "@/components/ErrorAlert";
+import { ClientResponseError } from "pocketbase";
 
 export const meta: MetaFunction = () => {
   return [
@@ -27,6 +29,7 @@ export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Product>>({});
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -112,12 +115,18 @@ export default function Products() {
 
   return (
     <Protected>
-      <div className="flex flex-col items-center justify-center">
-        <h1 className="text-3xl font-bold">Products</h1>
-        <div className="flex justify-end w-full mb-4">
-          <button className="btn btn-secondary" onClick={handleNewProductClick}>
-            New
-          </button>
+      {errorMessage && <ErrorAlert message={errorMessage} />}
+      <div className="flex flex-col items-center gap-2 justify-center">
+        <div className="flex flex-row justify-between w-full mb-4 mt-4 p-4">
+          <h1 className="text-3xl font-bold">Products</h1>
+          <div className="flex justify-end w-full mb-4">
+            <button
+              className="btn btn-secondary"
+              onClick={handleNewProductClick}
+            >
+              New
+            </button>
+          </div>
         </div>
         <div className={`modal ${isModalOpen ? "modal-open" : ""}`}>
           <div className="modal-box">
@@ -190,7 +199,7 @@ export default function Products() {
             {/* head */}
             <thead>
               <tr>
-                <th></th>
+                <th style={{ width: "1.5rem" }}></th>
                 <th>Name</th>
                 <th>Description</th>
                 <th>Price</th>
@@ -260,7 +269,7 @@ export default function Products() {
                   </td>
                   <td>
                     {editingProductId === product.id ? (
-                      <div className="flex justify-center flex-col gap-1 items-center">
+                      <div className="flex justify-center flex-row gap-1 items-center">
                         <button
                           className="btn btn-accent"
                           onClick={handleSaveClick}
@@ -279,6 +288,28 @@ export default function Products() {
                         Edit
                       </button>
                     )}
+                  </td>
+
+                  <td>
+                    <button
+                      className="btn btn-error"
+                      onClick={async () => {
+                        try {
+                          await pb.collection("products").delete(product.id);
+                        } catch (error) {
+                          if (error instanceof ClientResponseError) {
+                            setErrorMessage(
+                              "Product can't be deleted because it's referenced in an invoice"
+                            );
+                            setTimeout(() => setErrorMessage(null), 3000);
+                          } else if (error instanceof Error) {
+                            setErrorMessage(error.message);
+                          }
+                        }
+                      }}
+                    >
+                      delete
+                    </button>
                   </td>
                 </tr>
               ))}

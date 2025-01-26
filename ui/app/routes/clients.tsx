@@ -4,6 +4,8 @@ import { MetaFunction } from "@remix-run/node";
 import { Client, generateMockClients } from "@/utils/schemas";
 import Protected from "@/components/Protected";
 import { pb } from "@/lib/pocketbase";
+import { ClientResponseError } from "pocketbase";
+import ErrorAlert from "@/components/ErrorAlert";
 export const meta: MetaFunction = () => {
   return [
     { title: "Clients" },
@@ -25,6 +27,7 @@ export default function Clients() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Client>>({});
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -124,6 +127,7 @@ export default function Clients() {
 
   return (
     <Protected>
+      {errorMessage && <ErrorAlert message={errorMessage} />}
       <div className="flex flex-col items-center justify-between">
         <div className="flex justify-between w-full items-center my-8 px-4">
           <h1 className="text-3xl font-bold">Clients</h1>
@@ -260,7 +264,7 @@ export default function Clients() {
             {/* head */}
             <thead>
               <tr>
-                <th></th>
+                <th style={{ width: "1.5rem" }}></th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Phone</th>
@@ -426,6 +430,28 @@ export default function Clients() {
                           Edit
                         </button>
                       )}
+                    </td>
+
+                    <td>
+                      <button
+                        className="btn btn-error"
+                        onClick={async () => {
+                          try {
+                            await pb.collection("clients").delete(client.id);
+                          } catch (error) {
+                            if (error instanceof ClientResponseError) {
+                              setErrorMessage(
+                                "Product can't be deleted because it's referenced in an invoice"
+                              );
+                              setTimeout(() => setErrorMessage(null), 3000);
+                            } else if (error instanceof Error) {
+                              setErrorMessage(error.message);
+                            }
+                          }
+                        }}
+                      >
+                        delete
+                      </button>
                     </td>
                   </tr>
                 ))}
