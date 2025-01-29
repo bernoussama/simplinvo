@@ -6,8 +6,9 @@ import { getInvoices } from "@/lib/invoices"; // Assuming you have a function to
 import { useTranslation } from "react-i18next";
 
 export const meta: MetaFunction = () => {
+  const { t } = useTranslation("common");
   return [
-    { title: "Dashboard" },
+    { title: t("dashboard") },
     { name: "description", content: "Dashboard page" },
   ];
 };
