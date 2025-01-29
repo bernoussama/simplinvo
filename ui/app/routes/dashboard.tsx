@@ -78,7 +78,7 @@ const colors = [
 ];
 
 export default function Dashboard() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [invoiceData, setInvoiceData] = useState<number[]>([]);

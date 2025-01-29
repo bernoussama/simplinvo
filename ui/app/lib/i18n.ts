@@ -2,28 +2,91 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
-import Backend from "i18next-http-backend";
-import resourcesToBackend from "i18next-resources-to-backend";
 
 if (typeof window !== "undefined") {
   const localResources = {
     en: {
-      translation: {
+      common: {
         products: "Products",
         invoices: "Invoices",
         dashboard: "Dashboard",
         clients: "Clients",
         profile: "Profile",
-        // "invoice-preview": "Invoice Preview",
+        login: "Login",
+        logout: "Logout",
+        "invoice-preview": "Invoice Preview",
+        "total-sales": "Total sales",
+        sales: "Sales",
+        "sales-by-client": "Sales by client",
+      },
+      clients: {
+        title: "Clients",
+        new: "New",
+        newClient: "New Client",
+        form: {
+          name: "Name",
+          email: "Email",
+          phone: "Phone",
+          address: "Address",
+          city: "City",
+          country: "Country",
+          postalCode: "Postal Code",
+          ice: "ICE",
+          tax: "Tax",
+        },
+        actions: {
+          save: "Save",
+          cancel: "Cancel",
+          edit: "Edit",
+          delete: "Delete",
+        },
+        errors: {
+          deleteError:
+            "Product can't be deleted because it's referenced in an invoice",
+          noCompany: "No company found",
+        },
       },
     },
     fr: {
-      translation: {
+      common: {
         products: "Produits",
         invoices: "Factures",
+        dashboard: "Tableau de bord",
         clients: "Clients",
         profile: "Profil",
-        // "invoice-preview": "Aperçu de facture",
+        login: "Connexion",
+        logout: "Déconnexion",
+        "invoice-preview": "Aperçu de facture",
+        "total-sales": "Total des ventes",
+        sales: "Ventes",
+        "sales-by-client": "Ventes par client",
+      },
+      clients: {
+        title: "Clients",
+        new: "Nouveau",
+        newClient: "Nouveau Client",
+        form: {
+          name: "Nom",
+          email: "Email",
+          phone: "Téléphone",
+          address: "Adresse",
+          city: "Ville",
+          country: "Pays",
+          postalCode: "Code Postal",
+          ice: "ICE",
+          tax: "Taxe",
+        },
+        actions: {
+          save: "Enregistrer",
+          cancel: "Annuler",
+          edit: "Modifier",
+          delete: "Supprimer",
+        },
+        errors: {
+          deleteError:
+            "Le produit ne peut pas être supprimé car il est référencé dans une facture",
+          noCompany: "Aucune entreprise trouvée",
+        },
       },
     },
   };
@@ -32,7 +95,6 @@ if (typeof window !== "undefined") {
     // i18next-http-backend
     // loads translations from your server
     // https://github.com/i18next/i18next-http-backend
-    .use(Backend)
     // detect user language
     // learn more: https://github.com/i18next/i18next-browser-languageDetector
     .use(LanguageDetector)
@@ -46,21 +108,7 @@ if (typeof window !== "undefined") {
         escapeValue: false, // not needed for react as it escapes by default
       },
       fallbackLng: "en",
-      preload: ["en", "fr"],
-      // preload: false,
-      ns: ["translation"],
-      defaultNS: "translation",
-      backend: {
-        backends: [
-          Backend, // if a namespace can't be loaded via normal http-backend loadPath, then the inMemoryLocalBackend will try to return the correct resources
-          resourcesToBackend(localResources),
-        ],
-        // backendOptions: [
-        //   {
-        //     loadPath: `/locales/{{lng}}/{{ns}}.json`,
-        //   },
-        // ],
-      },
+      resources: localResources,
     });
 }
 

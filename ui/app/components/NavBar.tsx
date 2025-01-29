@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import LangSwitcher from "./LangSwitcher";
 
 export default function NavBar() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [companyName, setCompanyName] = useState("");
 

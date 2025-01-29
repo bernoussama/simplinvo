@@ -6,6 +6,7 @@ import Protected from "@/components/Protected";
 import { pb } from "@/lib/pocketbase";
 import { ClientResponseError } from "pocketbase";
 import ErrorAlert from "@/components/ErrorAlert";
+import { useTranslation } from "react-i18next";
 export const meta: MetaFunction = () => {
   return [
     { title: "Clients" },
@@ -19,10 +20,12 @@ async function getAllClients() {
   const records = await pb.collection("clients").getFullList({
     sort: "-name",
   });
-    
+
   return records;
 }
+
 export default function Clients() {
+  const { t } = useTranslation(["clients", "common"]);
   const [clients, setClients] = useState<Client[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
@@ -32,7 +35,7 @@ export default function Clients() {
   useEffect(() => {
     const fetchClients = async () => {
       const allClients = await getAllClients();
-        
+
       setClients(allClients as unknown as Client[]);
     };
 
@@ -65,7 +68,7 @@ export default function Clients() {
       const updatedClient = await pb
         .collection("clients")
         .update(editingClientId!, data);
-        
+
       setClients((prevClients) =>
         prevClients.map((client) =>
           client.id === editingClientId ? { ...client, ...formData } : client
@@ -96,11 +99,10 @@ export default function Clients() {
 
   const handleNewClientSave = async () => {
     try {
-        
       // formData.tax ||= 0;
       const company = pb.authStore.record?.company;
       if (!company) {
-        throw new Error("No company found");
+        throw new Error(t("errors.noCompany", { ns: "clients" }));
       }
       const data = {
         company: company,
@@ -115,7 +117,7 @@ export default function Clients() {
         tax: formData.tax,
       };
       const newClient = await pb.collection("clients").create(data);
-        
+
       setIsModalOpen(false);
       setFormData({});
       const allClients = await getAllClients();
@@ -130,19 +132,25 @@ export default function Clients() {
       {errorMessage && <ErrorAlert message={errorMessage} />}
       <div className="flex flex-col items-center justify-between">
         <div className="flex justify-between w-full items-center my-8 px-4">
-          <h1 className="text-3xl font-bold">Clients</h1>
+          <h1 className="text-3xl font-bold">
+            {t("title", { ns: "clients" })}
+          </h1>
 
           <button className="btn btn-secondary" onClick={handleNewClientClick}>
-            New
+            {t("new", { ns: "clients" })}
           </button>
         </div>
         <div className={`modal ${isModalOpen ? "modal-open" : ""}`}>
           <div className="modal-box">
-            <h3 className="font-bold text-lg">New Client</h3>
+            <h3 className="font-bold text-lg">
+              {t("newClient", { ns: "clients" })}
+            </h3>
             <form>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Name</span>
+                  <span className="label-text">
+                    {t("form.name", { ns: "clients" })}
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -154,7 +162,7 @@ export default function Clients() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Email</span>
+                  <span className="label-text">{t("clients.form.email")}</span>
                 </label>
                 <input
                   type="email"
@@ -166,7 +174,7 @@ export default function Clients() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Phone</span>
+                  <span className="label-text">{t("clients.form.phone")}</span>
                 </label>
                 <input
                   type="text"
@@ -178,7 +186,9 @@ export default function Clients() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Address</span>
+                  <span className="label-text">
+                    {t("clients.form.address")}
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -190,7 +200,7 @@ export default function Clients() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">City</span>
+                  <span className="label-text">{t("clients.form.city")}</span>
                 </label>
                 <input
                   type="text"
@@ -202,7 +212,9 @@ export default function Clients() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Country</span>
+                  <span className="label-text">
+                    {t("clients.form.country")}
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -214,7 +226,9 @@ export default function Clients() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Postal Code</span>
+                  <span className="label-text">
+                    {t("clients.form.postalCode")}
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -226,7 +240,7 @@ export default function Clients() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">ICE</span>
+                  <span className="label-text">{t("clients.form.ice")}</span>
                 </label>
                 <input
                   type="text"
@@ -238,7 +252,7 @@ export default function Clients() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Tax</span>
+                  <span className="label-text">{t("clients.form.tax")}</span>
                 </label>
                 <input
                   type="number"
@@ -251,29 +265,28 @@ export default function Clients() {
             </form>
             <div className="modal-action">
               <button className="btn btn-primary" onClick={handleNewClientSave}>
-                Save
+                {t("actions.save", { ns: "clients" })}
               </button>
               <button className="btn" onClick={handleModalClose}>
-                Cancel
+                {t("actions.cancel", { ns: "clients" })}
               </button>
             </div>
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="table table-zebra w-full">
-            {/* head */}
             <thead>
               <tr>
                 <th style={{ width: "1.5rem" }}></th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>City</th>
-                <th>Country</th>
-                <th>Postal Code</th>
-                <th>ICE</th>
-                <th>Tax</th>
+                <th>{t("form.name", { ns: "clients" })}</th>
+                <th>{t("form.email", { ns: "clients" })}</th>
+                <th>{t("form.phone", { ns: "clients" })}</th>
+                <th>{t("form.address", { ns: "clients" })}</th>
+                <th>{t("form.city", { ns: "clients" })}</th>
+                <th>{t("form.country", { ns: "clients" })}</th>
+                <th>{t("form.postalCode", { ns: "clients" })}</th>
+                <th>{t("form.ice", { ns: "clients" })}</th>
+                <th>{t("form.tax", { ns: "clients" })}</th>
                 <th></th>
               </tr>
             </thead>
@@ -416,10 +429,10 @@ export default function Clients() {
                             className="btn btn-accent"
                             onClick={handleSaveClick}
                           >
-                            Save
+                            {t("actions.save", { ns: "clients" })}
                           </button>
                           <button className="btn" onClick={handleCancelClick}>
-                            Cancel
+                            {t("clients.actions.cancel")}
                           </button>
                         </div>
                       ) : (
@@ -427,7 +440,7 @@ export default function Clients() {
                           className="btn btn-accent"
                           onClick={() => handleEditClick(client)}
                         >
-                          Edit
+                          {t("actions.edit", { ns: "clients" })}
                         </button>
                       )}
                     </td>
@@ -450,7 +463,7 @@ export default function Clients() {
                           }
                         }}
                       >
-                        delete
+                        {t("actions.delete", { ns: "clients" })}
                       </button>
                     </td>
                   </tr>
