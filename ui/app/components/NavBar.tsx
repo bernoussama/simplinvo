@@ -29,7 +29,7 @@ export default function NavBar() {
   const navigate = useNavigate();
 
   function logout() {
-    console.log("logout");
+      
     pb.authStore.clear();
     // reload the page
     navigate("/");

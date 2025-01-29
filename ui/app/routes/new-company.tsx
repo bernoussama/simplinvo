@@ -27,7 +27,7 @@ export default function NewCompany() {
 
     try {
       const record = await pb.collection("Companies").create(data);
-      console.log("Company created successfully:", record);
+        
       // Update the user's company field
       if (user) {
         await pb.collection("users").update(user.id, { company: record.id });

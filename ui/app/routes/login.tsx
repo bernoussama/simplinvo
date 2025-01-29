@@ -17,7 +17,7 @@ export default function Login() {
       const authData = await pb
         .collection("users")
         .authWithPassword(email, password);
-      console.log("User logged in successfully:", authData);
+        
       //redirect to dashboard
       if (authData.record.company == "") {
         navigate("/new-company");

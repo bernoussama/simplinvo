@@ -19,7 +19,7 @@ async function getAllClients() {
   const records = await pb.collection("clients").getFullList({
     sort: "-name",
   });
-  console.log("Records:", records);
+    
   return records;
 }
 export default function Clients() {
@@ -32,7 +32,7 @@ export default function Clients() {
   useEffect(() => {
     const fetchClients = async () => {
       const allClients = await getAllClients();
-      console.log("All clients:", allClients);
+        
       setClients(allClients as unknown as Client[]);
     };
 
@@ -65,7 +65,7 @@ export default function Clients() {
       const updatedClient = await pb
         .collection("clients")
         .update(editingClientId!, data);
-      console.log("Client updated:", updatedClient);
+        
       setClients((prevClients) =>
         prevClients.map((client) =>
           client.id === editingClientId ? { ...client, ...formData } : client
@@ -96,7 +96,7 @@ export default function Clients() {
 
   const handleNewClientSave = async () => {
     try {
-      console.log("Form data:", formData);
+        
       // formData.tax ||= 0;
       const company = pb.authStore.record?.company;
       if (!company) {
@@ -115,7 +115,7 @@ export default function Clients() {
         tax: formData.tax,
       };
       const newClient = await pb.collection("clients").create(data);
-      console.log("New client created:", newClient);
+        
       setIsModalOpen(false);
       setFormData({});
       const allClients = await getAllClients();

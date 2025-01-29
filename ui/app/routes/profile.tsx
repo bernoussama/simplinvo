@@ -62,7 +62,7 @@ const Profile: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const name = e.target.name;
-      console.log(name);
+        
       setFormData({ ...formData, [name]: e.target.files[0] });
     }
   };
@@ -73,7 +73,7 @@ const Profile: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log("submiting...");
+      
     e.preventDefault();
     if (company) {
       try {

@@ -12,7 +12,7 @@ const apiUrl = isProd
     : "http://127.0.0.1:8090"
   : "http://127.0.0.1:8090";
 const baseURL = apiUrl;
-console.log("baseURL: ", baseURL);
+
 export const pb = new pocketbase(baseURL);
 
 export const currentUser = pb.authStore.record;

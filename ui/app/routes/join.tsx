@@ -31,7 +31,7 @@ export default function Join() {
     try {
       const record = await pb.collection("users").create(data);
       // await pb.collection("users").requestVerification(email);
-      console.log("User created successfully:", record);
+        
       navigate("/login");
     } catch (error) {
       console.error("Error creating user:", error);

@@ -6,7 +6,7 @@ export default function Order() {
   const paramId = useParams<{ orderId: string }>().orderId;
 
   useEffect(() => {
-    console.log(paramId);
+      
   });
   return <Invoice invoiceId={paramId || ""} />;
 }

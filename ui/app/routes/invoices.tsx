@@ -32,7 +32,7 @@ export default function Invoices() {
     const records = await pb.collection("orders").getFullList({
       sort: "-date",
     });
-    console.log("Records:", records);
+      
     return records;
   }
 
@@ -179,7 +179,7 @@ export default function Invoices() {
   };
 
   const handleNewOrderSave = async () => {
-    console.log("products: ", formData.products);
+      
 
     const batch = pb.createBatch();
     const orderData = {
@@ -196,7 +196,7 @@ export default function Invoices() {
     };
 
     if (editingOrderId) {
-      console.log("editing order: ", editingOrderId);
+        
       batch.collection("orders").update(editingOrderId, orderData);
 
       const existingOrderDetails = await pb

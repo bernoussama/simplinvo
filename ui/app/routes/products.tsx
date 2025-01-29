@@ -21,7 +21,7 @@ async function getAllProducts() {
   const records = await pb.collection("products").getFullList({
     sort: "-name",
   });
-  console.log("Records:", records);
+    
   return records;
 }
 
@@ -35,7 +35,7 @@ export default function Products() {
     const fetchProducts = async () => {
       const allProducts = await getAllProducts();
       setProducts(allProducts as unknown as Product[]);
-      console.log("All products:", allProducts);
+        
     };
 
     fetchProducts();
@@ -65,7 +65,7 @@ export default function Products() {
       const updatedProduct = await pb
         .collection("products")
         .update(editingProductId!, data);
-      console.log("Product updated:", updatedProduct);
+        
       const allProducts = await getAllProducts();
       setProducts(allProducts as unknown as Product[]);
 

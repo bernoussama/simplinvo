@@ -114,17 +114,17 @@ export default function Dashboard() {
       setUsername(getCurrentUser()?.name);
     }
 
-    console.log("year: ", year);
+      
 
     const fetchInvoices = async () => {
       const invoices = await getInvoices();
 
-      console.log("invoices: ", invoices);
+        
       const yearInvoices = invoices.filter((invoice) => {
         const invoiceYear = new Date(invoice.date).toLocaleString("default", {
           year: "numeric",
         });
-        console.log("invoice year", invoiceYear);
+          
 
         return parseInt(invoiceYear) === year;
       });
@@ -140,7 +140,7 @@ export default function Dashboard() {
           })
           .reduce((sum, invoice) => sum + invoice.total, 0);
       });
-      console.log("totals: ", totals);
+        
 
       // group totals by clients
       const clientsSales: Map<string, number> = new Map();
@@ -154,7 +154,7 @@ export default function Dashboard() {
           clientsSales.set(element.client, element.total);
         }
       });
-      console.log(clientsSales);
+        
       const clientLabels: string[] = [];
       Array.from(clientsSales.keys()).forEach(async (id: string) => {
         const record = await pb.collection("clients").getOne(id);
@@ -173,7 +173,7 @@ export default function Dashboard() {
           },
         ],
       });
-      console.log(doughnutData);
+        
 
       setInvoiceData(totals);
       setData({

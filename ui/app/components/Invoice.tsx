@@ -134,13 +134,13 @@ export default function Order({ invoiceId }: OrderProps) {
   ) {
     const newDetails = [...orderDetails];
     newDetails[index].quantity = parseInt(e.target.value);
-    console.log("newDetails: ", newDetails);
+      
 
     try {
       const record = await pb
         .collection("order_details")
         .update(newDetails[index].id, newDetails[index]);
-      console.log("updated quantity for record: ", record);
+        
 
       setOrderDetails(newDetails);
     } catch (error) {
@@ -158,7 +158,7 @@ export default function Order({ invoiceId }: OrderProps) {
     const record_id = detail.product;
     try {
       const record = await pb.collection("products").update(record_id, data);
-      console.log("updated quantity for record: ", record);
+        
 
       setProducts(newProducts);
     } catch (error) {
@@ -171,7 +171,7 @@ export default function Order({ invoiceId }: OrderProps) {
   }
 
   async function handleAddProduct() {
-    console.log(productToAdd);
+      
 
     const data = {
       company: pb.authStore.record?.company,
@@ -180,9 +180,9 @@ export default function Order({ invoiceId }: OrderProps) {
       quantity: Number(productToAdd.quantity),
     };
 
-    console.log(data);
+      
     const record = await pb.collection("order_details").create(data);
-    console.log("product added: ", record);
+      
     fetchOrderdetails();
     setAddingProduct(false);
   }
@@ -218,7 +218,7 @@ export default function Order({ invoiceId }: OrderProps) {
     const detailsRecord = await pb
       .collection("order_details")
       .create(detailsData);
-    console.log(detailsRecord);
+      
     await fetchProducts(orderDetails);
     await fetchOrderdetails();
     setFormData({
@@ -234,7 +234,7 @@ export default function Order({ invoiceId }: OrderProps) {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    console.log(name, value);
+      
     const newProduct = { ...productToAdd };
     switch (name) {
       case "id":
@@ -250,7 +250,7 @@ export default function Order({ invoiceId }: OrderProps) {
         break;
     }
     setProductToAdd(newProduct);
-    console.log("product to add: ", productToAdd);
+      
   };
 
   return (
