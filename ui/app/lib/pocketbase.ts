@@ -1,17 +1,6 @@
 import pocketbase from "pocketbase";
-const isProd = import.meta.env.PROD;
-// const apiUrl = isProd
-//   ? import.meta.env.VITE_PB_API_URL
-//   : "http://127.0.0.1:8090";
 
-const apiUrl = isProd
-  ? typeof window !== "undefined"
-    ? `${window.location.protocol}//${window.location.hostname}${
-        window.location.port ? `:${window.location.port}` : ""
-      }`
-    : "http://127.0.0.1:8090"
-  : "http://127.0.0.1:8090";
-const baseURL = apiUrl;
+const baseURL = "/";
 
 export const pb = new pocketbase(baseURL);
 
