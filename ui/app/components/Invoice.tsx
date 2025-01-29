@@ -527,9 +527,7 @@ export default function Order({ invoiceId }: OrderProps) {
                   fileName={orderId + ".pdf"}
                 >
                   {({ blob, url, loading, error }) =>
-                    loading
-                      ? t("invoices:loadingDocument")
-                      : t("invoices:download")
+                    loading ? t("invoices:loading") : t("invoices:download")
                   }
                 </PDFDownloadLink>
               </button>

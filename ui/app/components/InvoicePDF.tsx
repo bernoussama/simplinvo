@@ -12,7 +12,7 @@ import {
   type Client,
   type Product,
 } from "@/utils/schemas";
-import { numberToWordsFrench, currency } from "@/lib/utils";
+import { numberToWordsFrench, currency, numberToWords } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
 interface InvoicePDFProps {
@@ -145,7 +145,8 @@ export const InvoicePDF = ({
   headerUrl,
   stampUrl,
 }: InvoicePDFProps) => {
-  const { t } = useTranslation("invoices");
+  const { t, i18n } = useTranslation("invoices");
+  console.log(i18n.language);
   const total = orderDetails.reduce(
     (sum, detail) =>
       sum + detail.quantity * (products[detail.product]?.price || 0),
@@ -240,10 +241,16 @@ export const InvoicePDF = ({
             </View>
             <View>
               <Text>
-                {numberToWordsFrench(total) + " " + t("currency")}
+                {(i18n.language == "fr"
+                  ? numberToWordsFrench(total)
+                  : numberToWords(total)) +
+                  " " +
+                  t("currency")}
                 {Number(totalDecimals) > 0
                   ? " et " +
-                    numberToWordsFrench(Number(totalDecimals)) +
+                    (i18n.language == "fr"
+                      ? numberToWordsFrench(Number(totalDecimals))
+                      : numberToWords(Number(totalDecimals))) +
                     " centimes."
                   : ""}
               </Text>
