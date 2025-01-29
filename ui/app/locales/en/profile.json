@@ -1,0 +1,17 @@
+{
+  "title": "Company Profile",
+  "saveChanges": "Save Changes",
+  "name": "Name",
+  "email": "Email",
+  "phone": "Phone",
+  "address": "Address",
+  "city": "City",
+  "country": "Country",
+  "postalCode": "Postal Code",
+  "ice": "ICE",
+  "tax": "Tax",
+  "companyHeader": "Company Header",
+  "stamp": "Stamp",
+  "companyHeaderPreview": "Company Header Preview",
+  "loading": "Loading..."
+}

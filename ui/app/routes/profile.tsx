@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useState, useEffect } from "react";
 import { fetchStampImage, pb } from "@/lib/pocketbase"; // Assuming you are using PocketBase for data fetching
+import { useTranslation } from "react-i18next";
 import SuccessAlert from "@/components/SuccessAlert";
 import ErrorAlert from "@/components/ErrorAlert";
 
@@ -20,6 +21,7 @@ interface Company {
 }
 
 const Profile: React.FC = () => {
+  const { t } = useTranslation("profile");
   const [company, setCompany] = useState<Company | null>(null);
   const [header_url, setHeaderUrl] = useState<string>("");
   const [formData, setFormData] = useState<Partial<Company>>({});
@@ -62,7 +64,7 @@ const Profile: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const name = e.target.name;
-        
+
       setFormData({ ...formData, [name]: e.target.files[0] });
     }
   };
@@ -73,7 +75,6 @@ const Profile: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-      
     e.preventDefault();
     if (company) {
       try {
@@ -92,7 +93,7 @@ const Profile: React.FC = () => {
   };
 
   if (!company) {
-    return <div>Loading...</div>;
+    return <div>{t("loading")}</div>;
   }
 
   return (
@@ -100,7 +101,7 @@ const Profile: React.FC = () => {
       {showAlert && <SuccessAlert />}
       {errorMessage && <ErrorAlert message={errorMessage} />}
       <div className="flex w-full justify-between items-center">
-        <h1 className="text-2xl font-bold mb-4">Company Profile</h1>
+        <h1 className="text-2xl font-bold mb-4">{t("title")}</h1>
 
         <div className="form-control">
           <button
@@ -108,13 +109,13 @@ const Profile: React.FC = () => {
             className="btn btn-primary"
             onClick={handleSubmit}
           >
-            Save Changes
+            {t("saveChanges")}
           </button>
         </div>
       </div>
       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
         <div className="form-control">
-          <label className="label">Name</label>
+          <label className="label">{t("name")}</label>
           <input
             type="text"
             name="name"
@@ -124,7 +125,7 @@ const Profile: React.FC = () => {
           />
         </div>
         <div className="form-control">
-          <label className="label">Email</label>
+          <label className="label">{t("email")}</label>
           <input
             type="email"
             name="email"
@@ -134,7 +135,7 @@ const Profile: React.FC = () => {
           />
         </div>
         <div className="form-control">
-          <label className="label">Phone</label>
+          <label className="label">{t("phone")}</label>
           <input
             type="text"
             name="phone"
@@ -144,7 +145,7 @@ const Profile: React.FC = () => {
           />
         </div>
         <div className="form-control">
-          <label className="label">Address</label>
+          <label className="label">{t("address")}</label>
           <input
             type="text"
             name="address"
@@ -154,7 +155,7 @@ const Profile: React.FC = () => {
           />
         </div>
         <div className="form-control">
-          <label className="label">City</label>
+          <label className="label">{t("city")}</label>
           <input
             type="text"
             name="city"
@@ -164,7 +165,7 @@ const Profile: React.FC = () => {
           />
         </div>
         <div className="form-control">
-          <label className="label">Country</label>
+          <label className="label">{t("country")}</label>
           <input
             type="text"
             name="country"
@@ -174,7 +175,7 @@ const Profile: React.FC = () => {
           />
         </div>
         <div className="form-control">
-          <label className="label">Postal Code</label>
+          <label className="label">{t("postalCode")}</label>
           <input
             type="text"
             name="postalCode"
@@ -184,7 +185,7 @@ const Profile: React.FC = () => {
           />
         </div>
         <div className="form-control">
-          <label className="label">ICE</label>
+          <label className="label">{t("ice")}</label>
           <input
             type="text"
             name="ice"
@@ -194,7 +195,7 @@ const Profile: React.FC = () => {
           />
         </div>
         <div className="form-control">
-          <label className="label">Tax</label>
+          <label className="label">{t("tax")}</label>
           <input
             type="number"
             name="tax"
@@ -205,7 +206,7 @@ const Profile: React.FC = () => {
         </div>
         <div>
           <div className="form-control">
-            <label className="label">Company Header</label>
+            <label className="label">{t("companyHeader")}</label>
             <input
               type="file"
               name="header"
@@ -217,7 +218,7 @@ const Profile: React.FC = () => {
         </div>
         <div>
           <div className="form-control">
-            <label className="label">stamp</label>
+            <label className="label">{t("stamp")}</label>
             <input
               type="file"
               name="stamp"
@@ -232,7 +233,7 @@ const Profile: React.FC = () => {
       <div className="flex justify-center items-center mt-4">
         <div className="card w-96 shadow-xl bordered">
           <div className="card-body py-4 px-4">
-            <h2 className="card-title">Company Header Preview</h2>
+            <h2 className="card-title">{t("companyHeaderPreview")}</h2>
           </div>
           <figure className="w-full m-0">
             <img src={header_url} alt="Company Header" className="w-full" />

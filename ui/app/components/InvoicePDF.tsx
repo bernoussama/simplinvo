@@ -13,6 +13,7 @@ import {
   type Product,
 } from "@/utils/schemas";
 import { numberToWordsFrench, currency } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface InvoicePDFProps {
   order: Order;
@@ -144,6 +145,7 @@ export const InvoicePDF = ({
   headerUrl,
   stampUrl,
 }: InvoicePDFProps) => {
+  const { t } = useTranslation("invoices");
   const total = orderDetails.reduce(
     (sum, detail) =>
       sum + detail.quantity * (products[detail.product]?.price || 0),
@@ -174,11 +176,11 @@ export const InvoicePDF = ({
             <View style={styles.table}>
               <View style={styles.tableHeader}>
                 <Text style={{ width: "20%", textAlign: "center" }}>
-                  Invoice
+                  {t("invoiceId")}
                 </Text>
                 <Text style={{ width: "20%", textAlign: "center" }}>Date</Text>
                 <Text style={{ width: "35%", textAlign: "center" }}>
-                  Client
+                  {t("client")}
                 </Text>
                 <Text style={{ width: "25%", textAlign: "center" }}>PO</Text>
               </View>
@@ -201,10 +203,10 @@ export const InvoicePDF = ({
 
             <View style={styles.table}>
               <View style={styles.tableHeader}>
-                <Text style={styles.column1}>Product</Text>
-                <Text style={styles.column2}>Quantity</Text>
-                <Text style={styles.column3}>Price</Text>
-                <Text style={styles.column4}>Total</Text>
+                <Text style={styles.column1}>{t("product")}</Text>
+                <Text style={styles.column2}>{t("quantity")}</Text>
+                <Text style={styles.column3}>{t("price")}</Text>
+                <Text style={styles.column4}>{t("total")}</Text>
               </View>
 
               {orderDetails.map((detail, index) => (
@@ -233,12 +235,12 @@ export const InvoicePDF = ({
             </View>
 
             <View style={styles.total}>
-              <Text style={styles.totalLabel}>Total:</Text>
+              <Text style={styles.totalLabel}>{t("total")}:</Text>
               <Text style={styles.totalAmount}>{currency.format(total)}</Text>
             </View>
             <View>
               <Text>
-                {numberToWordsFrench(total) + " dirhams"}
+                {numberToWordsFrench(total) + " " + t("currency")}
                 {Number(totalDecimals) > 0
                   ? " et " +
                     numberToWordsFrench(Number(totalDecimals)) +

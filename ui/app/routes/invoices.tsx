@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { MetaFunction } from "@remix-run/node";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { pb } from "@/lib/pocketbase";
 import { OrderSummary, Order, Client, Product } from "@/utils/schemas";
@@ -8,13 +9,15 @@ import Protected from "@/components/Protected";
 import { currency } from "@/lib/utils";
 
 export const meta: MetaFunction = () => {
+  const { t } = useTranslation("invoices");
   return [
-    { title: "Invoices" },
-    { name: "description", content: "Invoices page" },
+    { title: t("title") },
+    { name: "description", content: t("description") },
   ];
 };
 
 export default function Invoices() {
+  const { t } = useTranslation(["common", "invoices"]);
   const navigate = useNavigate();
   const [orderSummaries, setOrderSummaries] = useState<OrderSummary[]>([]);
   const [formData, setFormData] = useState<Partial<Order>>({
@@ -32,7 +35,7 @@ export default function Invoices() {
     const records = await pb.collection("orders").getFullList({
       sort: "-date",
     });
-      
+
     return records;
   }
 
@@ -179,8 +182,6 @@ export default function Invoices() {
   };
 
   const handleNewOrderSave = async () => {
-      
-
     const batch = pb.createBatch();
     const orderData = {
       company: pb.authStore.record?.company,
@@ -196,7 +197,6 @@ export default function Invoices() {
     };
 
     if (editingOrderId) {
-        
       batch.collection("orders").update(editingOrderId, orderData);
 
       const existingOrderDetails = await pb
@@ -247,18 +247,20 @@ export default function Invoices() {
     <Protected>
       <div className="flex flex-col items-center justify-center">
         <div className="flex flex-row justify-between w-full mb-4 mt-4 p-4">
-          <h1 className="text-3xl font-bold">Invoices</h1>
+          <h1 className="text-3xl font-bold">{t("invoices:title")}</h1>
           <button className="btn btn-secondary" onClick={handleNewOrderClick}>
-            New
+            {t("invoices:new")}
           </button>
         </div>
         <div className={`modal ${isModalOpen ? "modal-open" : ""}`}>
           <div className="modal-box">
-            <h3 className="font-bold text-lg">New Order Detail</h3>
+            <h3 className="font-bold text-lg">
+              {t("invoices:newOrderDetail")}
+            </h3>
             <form>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">PO</span>
+                  <span className="label-text">{t("invoices:po")}</span>
                 </label>
                 <input
                   type="text"
@@ -270,7 +272,7 @@ export default function Invoices() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Client</span>
+                  <span className="label-text">{t("invoices:client")}</span>
                 </label>
                 <select
                   name="client"
@@ -279,7 +281,7 @@ export default function Invoices() {
                   className="select select-bordered"
                 >
                   <option value="" disabled>
-                    Select a client
+                    {t("invoices:selectClient")}
                   </option>
                   {clients.map((client) => (
                     <option key={client.id} value={client.id}>
@@ -290,7 +292,7 @@ export default function Invoices() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Date</span>
+                  <span className="label-text">{t("invoices:date")}</span>
                 </label>
                 <input
                   type="date"
@@ -307,7 +309,7 @@ export default function Invoices() {
               {formData.products?.map((product, index) => (
                 <div key={index} className="form-control">
                   <label className="label">
-                    <span className="label-text">Product</span>
+                    <span className="label-text">{t("invoices:product")}</span>
                   </label>
                   <select
                     name="product"
@@ -316,7 +318,7 @@ export default function Invoices() {
                     className="select select-bordered"
                   >
                     <option value="" disabled>
-                      Select a product
+                      {t("invoices:selectProduct")}
                     </option>
                     {products.map((product) => (
                       <option key={product.id} value={product.id}>
@@ -325,7 +327,7 @@ export default function Invoices() {
                     ))}
                   </select>
                   <label className="label">
-                    <span className="label-text">Quantity</span>
+                    <span className="label-text">{t("invoices:quantity")}</span>
                   </label>
                   <input
                     type="number"
@@ -339,7 +341,7 @@ export default function Invoices() {
                     className="btn btn-secondary mt-2"
                     onClick={() => handleRemoveProduct(index)}
                   >
-                    Remove
+                    {t("invoices:remove")}
                   </button>
                 </div>
               ))}
@@ -348,7 +350,7 @@ export default function Invoices() {
                 className="btn btn-secondary mt-2"
                 onClick={handleAddProduct}
               >
-                Add Product
+                {t("invoices:addProduct")}
               </button>
             </form>
             <div className="modal-action">
@@ -356,10 +358,10 @@ export default function Invoices() {
                 className="btn btn-secondary"
                 onClick={handleNewOrderSave}
               >
-                Save
+                {t("common:save")}
               </button>
               <button className="btn" onClick={handleCancelClick}>
-                Cancel
+                {t("common:cancel")}
               </button>
             </div>
           </div>
@@ -369,11 +371,11 @@ export default function Invoices() {
           <table className="table table-zebra w-full">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Client</th>
-                <th>Date</th>
-                <th>PO</th>
-                <th>Total</th>
+                <th>{t("invoices:id")}</th>
+                <th>{t("invoices:client")}</th>
+                <th>{t("invoices:date")}</th>
+                <th>{t("invoices:po")}</th>
+                <th>{t("invoices:total")}</th>
                 <th></th>
                 <th></th>
               </tr>
@@ -391,7 +393,7 @@ export default function Invoices() {
                       className="btn btn-secondary"
                       onClick={() => handleEditClick(orderSummary)}
                     >
-                      Edit
+                      {t("common:edit")}
                     </button>
                   </td>
                   <td>
@@ -399,7 +401,7 @@ export default function Invoices() {
                       className="btn btn-accent"
                       onClick={() => handleShowClick(orderSummary)}
                     >
-                      Show
+                      {t("invoices:show")}
                     </button>
                   </td>
 
@@ -424,7 +426,7 @@ export default function Invoices() {
                         fetchOrderSummaries();
                       }}
                     >
-                      delete
+                      {t("common:delete")}
                     </button>
                   </td>
                 </tr>
