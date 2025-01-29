@@ -6,6 +6,8 @@ import invoicesEN from "@/locales/en/invoices.json";
 import invoicesFR from "@/locales/fr/invoices.json";
 import profileEN from "@/locales/en/profile.json";
 import profileFR from "@/locales/fr/profile.json";
+import indexEN from "@/locales/en/index.json";
+import indexFR from "@/locales/fr/index.json";
 
 if (typeof window !== "undefined") {
   const localResources = {
@@ -72,6 +74,7 @@ if (typeof window !== "undefined") {
       },
       invoices: invoicesEN,
       profile: profileEN,
+      index: indexEN,
     },
     fr: {
       common: {
@@ -136,6 +139,7 @@ if (typeof window !== "undefined") {
       },
       invoices: invoicesFR,
       profile: profileFR,
+      index: indexFR,
     },
   };
 
