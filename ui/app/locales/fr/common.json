@@ -1,0 +1,18 @@
+{
+  "language": "langue",
+  "save": "Enregistrer",
+  "cancel": "Annuler",
+  "edit": "Modifier",
+  "delete": "Supprimer",
+  "products": "Produits",
+  "invoices": "Factures",
+  "dashboard": "Tableau de bord",
+  "clients": "Clients",
+  "profile": "Profil",
+  "login": "Connexion",
+  "logout": "Déconnexion",
+  "invoice-preview": "Aperçu de facture",
+  "total-sales": "Total des ventes",
+  "sales": "Ventes",
+  "sales-by-client": "Ventes par client"
+}

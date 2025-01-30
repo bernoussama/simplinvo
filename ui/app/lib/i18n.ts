@@ -2,6 +2,9 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
+
+import commonEN from "@/locales/en/common.json";
+import commonFR from "@/locales/fr/common.json";
 import invoicesEN from "@/locales/en/invoices.json";
 import invoicesFR from "@/locales/fr/invoices.json";
 import profileEN from "@/locales/en/profile.json";
@@ -12,19 +15,7 @@ import indexFR from "@/locales/fr/index.json";
 if (typeof window !== "undefined") {
   const localResources = {
     en: {
-      common: {
-        products: "Products",
-        invoices: "Invoices",
-        dashboard: "Dashboard",
-        clients: "Clients",
-        profile: "Profile",
-        login: "Login",
-        logout: "Logout",
-        "invoice-preview": "Invoice Preview",
-        "total-sales": "Total sales",
-        sales: "Sales",
-        "sales-by-client": "Sales by client",
-      },
+      common: commonEN,
       clients: {
         title: "Clients",
         new: "New",
@@ -77,19 +68,7 @@ if (typeof window !== "undefined") {
       index: indexEN,
     },
     fr: {
-      common: {
-        products: "Produits",
-        invoices: "Factures",
-        dashboard: "Tableau de bord",
-        clients: "Clients",
-        profile: "Profil",
-        login: "Connexion",
-        logout: "Déconnexion",
-        "invoice-preview": "Aperçu de facture",
-        "total-sales": "Total des ventes",
-        sales: "Ventes",
-        "sales-by-client": "Ventes par client",
-      },
+      common: commonFR,
       clients: {
         title: "Clients",
         new: "Nouveau",

@@ -1,6 +1,19 @@
 {
+  "language": "language",
   "save": "Save",
   "cancel": "Cancel",
   "edit": "Edit",
-  "delete": "Delete"
+  "delete": "Delete",
+
+  "products": "Products",
+  "invoices": "Invoices",
+  "dashboard": "Dashboard",
+  "clients": "Clients",
+  "profile": "Profile",
+  "login": "Login",
+  "logout": "Logout",
+  "invoice-preview": "Invoice Preview",
+  "total-sales": "Total sales",
+  "sales": "Sales",
+  "sales-by-client": "Sales by client"
 }

@@ -18,7 +18,7 @@
   "productDeleteError": "Le produit ne peut pas être supprimé car il est référencé dans une facture",
   "loading": "Chargement...",
   "editInvoice": "Modifier la Facture",
-  "invoiceId": "ID de la Facture",
+  "invoiceId": "No de la Facture",
   "confirm": "Confirmer",
   "toggleHeader": "Afficher l'en-tête",
   "toggleStamp": "Afficher le tampon",

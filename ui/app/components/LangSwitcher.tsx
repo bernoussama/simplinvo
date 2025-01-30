@@ -6,15 +6,15 @@ const lngs = {
 } as const;
 
 function LangSwitcher() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation("common");
   return (
-    <div className="dropdown dropdown-end">
-      <label tabIndex={0} className="btn btn-ghost btn-sm">
-        Language
-      </label>
+    <div className="dropdown">
+      <div tabIndex={0} className="btn btn-ghost m-1">
+        {t("language")}
+      </div>
       <ul
         tabIndex={0}
-        className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box"
+        className="menu dropdown-content bg-base-100 rounded-box z-[1] gap-1 w-full p-2 shadow"
       >
         {Object.entries(lngs).map(([lng, { nativeName }]) => (
           <li key={lng}>
