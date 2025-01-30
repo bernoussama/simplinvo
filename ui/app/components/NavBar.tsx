@@ -17,17 +17,20 @@ export default function NavBar() {
     const unsubscribe = pb.authStore.onChange(() => {
       setLoggedIn(isLoggedIn());
     });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
     (async () => {
       const record = await pb
         .collection("companies")
         .getOne(pb.authStore.record?.company);
       setCompanyName(record.name);
     })();
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
+  }, [loggedIn]);
 
   const navigate = useNavigate();
 
