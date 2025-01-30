@@ -17,11 +17,9 @@ export const meta: MetaFunction = () => {
 };
 
 async function getAllProducts() {
-  const records = await pb.collection("products").getFullList({
+  return await pb.collection("products").getFullList({
     sort: "-name",
   });
-
-  return records;
 }
 
 export default function Products() {

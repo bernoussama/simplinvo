@@ -5,9 +5,7 @@ export async function getInvoices() {
 
   // check if token is valid?
 
-  const records = await pb.collection("orders").getFullList({
+  return await pb.collection("orders").getFullList({
     // sort: "-someField",
   });
-
-  return records;
 }

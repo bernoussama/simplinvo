@@ -32,11 +32,9 @@ export default function Invoices() {
   const [products, setProducts] = useState<Product[]>([]);
 
   async function getAllOrderSummaries() {
-    const records = await pb.collection("orders").getFullList({
+    return await pb.collection("orders").getFullList({
       sort: "-date",
     });
-
-    return records;
   }
 
   const fetchOrderSummaries = async () => {
