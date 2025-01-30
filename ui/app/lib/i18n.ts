@@ -12,6 +12,8 @@ import profileFR from "@/locales/fr/profile.json";
 import indexEN from "@/locales/en/index.json";
 import indexFR from "@/locales/fr/index.json";
 import { isProd } from "./utils";
+import footerEN from "@/locales/en/footer.json";
+import footerFR from "@/locales/fr/footer.json";
 
 if (typeof window !== "undefined") {
   const localResources = {
@@ -67,6 +69,7 @@ if (typeof window !== "undefined") {
       invoices: invoicesEN,
       profile: profileEN,
       index: indexEN,
+      footer: footerEN,
     },
     fr: {
       common: commonFR,
@@ -120,6 +123,7 @@ if (typeof window !== "undefined") {
       invoices: invoicesFR,
       profile: profileFR,
       index: indexFR,
+      footer: footerFR,
     },
   };
 

@@ -3,11 +3,9 @@ import NavBar from "./NavBar";
 
 export default function Layout() {
   return (
-    <div className="w-full">
+    <div className="w-full mx-auto h-full flex">
       <NavBar />
-      <main className="container mx-auto">
-        <Outlet />
-      </main>
+      <Outlet />
     </div>
   );
 }

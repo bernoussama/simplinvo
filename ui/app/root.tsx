@@ -42,7 +42,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
       </head>
       <body>
-        <div className="container mx-auto h-auto">
+        <div className="mx-auto w-full h-full flex flex-col min-h-screen">
           <NavBar />
           {children}
         </div>
