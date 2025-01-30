@@ -112,9 +112,11 @@ export default function NavBar() {
         </ul>
       </div>
       <div className="navbar-end gap-4">
-        <Link to="/profile" className="btn btn-ghost">
-          {companyName}
-        </Link>
+        {loggedIn && (
+          <Link to="/profile" className="btn btn-ghost">
+            {companyName}
+          </Link>
+        )}
         <ThemeToggle />
         {loggedIn ? (
           <button className="btn" onClick={logout}>
