@@ -23,6 +23,9 @@ func main() {
 
 		// serves static files from the embeded public dir (if exists)
 		se.Router.GET("/{path...}", apis.Static(ui.DistDirFS, true))
+
+		// se.Router.GET("/locales/{lang}/translation.json", apis.Static(ui.DistDirFS, false))
+
 		apiv1 := se.Router.Group("/api/v1")
 		apiv1.GET("/test", api.Test)
 

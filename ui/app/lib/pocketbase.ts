@@ -1,6 +1,7 @@
 import pocketbase from "pocketbase";
+import { isProd } from "./utils";
 
-const baseURL = "/";
+const baseURL = isProd ? "/" : "http://localhost:8090/";
 
 export const pb = new pocketbase(baseURL);
 

@@ -3,9 +3,12 @@ import { MetaFunction } from "@remix-run/node";
 import { ChangeEvent, useEffect, useState } from "react";
 import { getInvoices } from "@/lib/invoices"; // Assuming you have a function to fetch invoices
 
+import { useTranslation } from "react-i18next";
+
 export const meta: MetaFunction = () => {
+  const { t } = useTranslation("common");
   return [
-    { title: "Dashboard" },
+    { title: t("dashboard") },
     { name: "description", content: "Dashboard page" },
   ];
 };
@@ -76,6 +79,7 @@ const colors = [
 ];
 
 export default function Dashboard() {
+  const { t } = useTranslation("common");
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [invoiceData, setInvoiceData] = useState<number[]>([]);
@@ -86,7 +90,7 @@ export default function Dashboard() {
     datasets: [
       {
         fill: false,
-        label: "Sales",
+        label: t("sales"),
         data: invoiceData,
         borderColor: "rgb(53, 162, 235)",
         backgroundColor: "rgba(53, 162, 235, 0.5)",
@@ -97,7 +101,7 @@ export default function Dashboard() {
     labels: [],
     datasets: [
       {
-        label: "Sales by client",
+        label: t("sales-by-client"),
         data: [],
         // borderColor: "rgb(53, 162, 235)",
         // backgroundColor: "rgba(53, 162, 235, 0.5)",
@@ -114,17 +118,13 @@ export default function Dashboard() {
       setUsername(getCurrentUser()?.name);
     }
 
-      
-
     const fetchInvoices = async () => {
       const invoices = await getInvoices();
 
-        
       const yearInvoices = invoices.filter((invoice) => {
         const invoiceYear = new Date(invoice.date).toLocaleString("default", {
           year: "numeric",
         });
-          
 
         return parseInt(invoiceYear) === year;
       });
@@ -140,7 +140,6 @@ export default function Dashboard() {
           })
           .reduce((sum, invoice) => sum + invoice.total, 0);
       });
-        
 
       // group totals by clients
       const clientsSales: Map<string, number> = new Map();
@@ -154,7 +153,7 @@ export default function Dashboard() {
           clientsSales.set(element.client, element.total);
         }
       });
-        
+
       const clientLabels: string[] = [];
       Array.from(clientsSales.keys()).forEach(async (id: string) => {
         const record = await pb.collection("clients").getOne(id);
@@ -165,7 +164,7 @@ export default function Dashboard() {
         labels: clientLabels,
         datasets: [
           {
-            label: "Sales by client",
+            label: t("sales-by-client"),
             data: [...clientsSales.values()],
             backgroundColor: colors.slice(0, clientLabels.length + 2),
             borderColor: colors.slice(0, clientLabels.length + 2),
@@ -173,7 +172,6 @@ export default function Dashboard() {
           },
         ],
       });
-        
 
       setInvoiceData(totals);
       setData({
@@ -181,7 +179,7 @@ export default function Dashboard() {
         datasets: [
           {
             fill: false,
-            label: "Sales",
+            label: t("sales"),
             data: totals,
             borderColor: "rgb(53, 162, 235)",
             backgroundColor: "rgba(53, 162, 235, 0.5)",
@@ -215,7 +213,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-3 grid-rows-2 gap-4 max-h-screen">
             <div className="card shadow-lg rounded-lg w-full h-full mx-auto border col-span-2">
               <div className=" w-full p-2 flex justify-between items-center rounded-t-lg h-16 shadow-sm">
-                <h2 className="card-title ml-1">Sales</h2>
+                <h2 className="card-title ml-1">{t("sales")}</h2>
                 <select
                   id="year"
                   name="year"
@@ -236,7 +234,9 @@ export default function Dashboard() {
                 </div>
                 <div className=" grid grid-rows-3 gap-2">
                   <div className="stat mx-auto text-center break-all">
-                    <h3 className="stat-title text-secondary">Total Sales</h3>
+                    <h3 className="stat-title text-secondary">
+                      {t("total-sales")}
+                    </h3>
                     <p className="stat-value text-lg text-secondary break-all">
                       ${totalSales}
                     </p>
@@ -246,7 +246,7 @@ export default function Dashboard() {
             </div>
             <div className="card shadow-lg rounded-lg w-full h-full max-h-screen mx-auto border">
               <div className=" w-full p-2 flex items-center justify-start rounded-t-lg h-16 shadow-sm">
-                <h2 className="card-title">Sales by client</h2>
+                <h2 className="card-title">{t("sales-by-client")}</h2>
               </div>
               <div className="p-2 h-full">
                 <Doughnut options={options} data={doughnutData} />

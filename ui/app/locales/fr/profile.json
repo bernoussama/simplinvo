@@ -1,0 +1,17 @@
+{
+  "title": "Profil de l'entreprise",
+  "saveChanges": "Enregistrer les modifications",
+  "name": "Nom",
+  "email": "Email",
+  "phone": "Téléphone",
+  "address": "Adresse",
+  "city": "Ville",
+  "country": "Pays",
+  "postalCode": "Code Postal",
+  "ice": "ICE",
+  "tax": "Taxe",
+  "companyHeader": "En-tête de l'entreprise",
+  "stamp": "Tampon",
+  "companyHeaderPreview": "Aperçu de l'en-tête de l'entreprise",
+  "loading": "Chargement..."
+}

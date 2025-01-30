@@ -7,6 +7,7 @@ import Protected from "@/components/Protected";
 import { currency } from "@/lib/utils";
 import ErrorAlert from "@/components/ErrorAlert";
 import { ClientResponseError } from "pocketbase";
+import { useTranslation } from "react-i18next";
 
 export const meta: MetaFunction = () => {
   return [
@@ -15,17 +16,14 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-// const mockProducts: Product[] = generateMockProducts(10);
-//
 async function getAllProducts() {
-  const records = await pb.collection("products").getFullList({
+  return await pb.collection("products").getFullList({
     sort: "-name",
   });
-    
-  return records;
 }
 
 export default function Products() {
+  const { t } = useTranslation("products");
   const [products, setProducts] = useState<Product[]>([]);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Product>>({});
@@ -35,7 +33,6 @@ export default function Products() {
     const fetchProducts = async () => {
       const allProducts = await getAllProducts();
       setProducts(allProducts as unknown as Product[]);
-        
     };
 
     fetchProducts();
@@ -62,10 +59,8 @@ export default function Products() {
         price: formData.price,
         tax: formData.tax,
       };
-      const updatedProduct = await pb
-        .collection("products")
-        .update(editingProductId!, data);
-        
+      await pb.collection("products").update(editingProductId!, data);
+
       const allProducts = await getAllProducts();
       setProducts(allProducts as unknown as Product[]);
 
@@ -103,7 +98,7 @@ export default function Products() {
         price: formData.price,
         tax: formData.tax,
       };
-      const newProduct = await pb.collection("products").create(data);
+      await pb.collection("products").create(data);
       const allProducts = await getAllProducts();
       setProducts(allProducts as unknown as Product[]);
       setIsModalOpen(false);
@@ -118,23 +113,23 @@ export default function Products() {
       {errorMessage && <ErrorAlert message={errorMessage} />}
       <div className="flex flex-col items-center gap-2 justify-center">
         <div className="flex flex-row justify-between w-full mb-4 mt-4 p-4">
-          <h1 className="text-3xl font-bold">Products</h1>
+          <h1 className="text-3xl font-bold">{t("title")}</h1>
           <div className="flex justify-end w-full mb-4">
             <button
               className="btn btn-secondary"
               onClick={handleNewProductClick}
             >
-              New
+              {t("new")}
             </button>
           </div>
         </div>
         <div className={`modal ${isModalOpen ? "modal-open" : ""}`}>
           <div className="modal-box">
-            <h3 className="font-bold text-lg">New Product</h3>
+            <h3 className="font-bold text-lg">{t("title")}</h3>
             <form>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Name</span>
+                  <span className="label-text">{t("form.name")}</span>
                 </label>
                 <input
                   type="text"
@@ -146,7 +141,7 @@ export default function Products() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Description</span>
+                  <span className="label-text">{t("form.description")}</span>
                 </label>
                 <textarea
                   name="description"
@@ -158,7 +153,7 @@ export default function Products() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Price</span>
+                  <span className="label-text">{t("form.price")}</span>
                 </label>
                 <input
                   type="number"
@@ -170,7 +165,7 @@ export default function Products() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Tax</span>
+                  <span className="label-text">{t("form.tax")}</span>
                 </label>
                 <input
                   type="number"
@@ -186,24 +181,23 @@ export default function Products() {
                 className="btn btn-primary"
                 onClick={handleNewProductSave}
               >
-                Save
+                {t("actions.save")}
               </button>
               <button className="btn" onClick={handleModalClose}>
-                Cancel
+                {t("actions.cancel")}
               </button>
             </div>
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="table table-zebra w-full">
-            {/* head */}
             <thead>
               <tr>
                 <th style={{ width: "1.5rem" }}></th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Price</th>
-                <th>Tax</th>
+                <th>{t("form.name")}</th>
+                <th>{t("form.description")}</th>
+                <th>{t("form.price")}</th>
+                <th>{t("form.tax")}</th>
                 <th></th>
               </tr>
             </thead>
@@ -274,10 +268,10 @@ export default function Products() {
                           className="btn btn-accent"
                           onClick={handleSaveClick}
                         >
-                          Save
+                          {t("actions.save")}
                         </button>
                         <button className="btn" onClick={handleCancelClick}>
-                          Cancel
+                          {t("actions.cancel")}
                         </button>
                       </div>
                     ) : (
@@ -285,7 +279,7 @@ export default function Products() {
                         className="btn btn-accent"
                         onClick={() => handleEditClick(product)}
                       >
-                        Edit
+                        {t("actions.edit")}
                       </button>
                     )}
                   </td>
@@ -298,9 +292,7 @@ export default function Products() {
                           await pb.collection("products").delete(product.id);
                         } catch (error) {
                           if (error instanceof ClientResponseError) {
-                            setErrorMessage(
-                              "Product can't be deleted because it's referenced in an invoice"
-                            );
+                            setErrorMessage(t("errors.deleteError"));
                             setTimeout(() => setErrorMessage(null), 3000);
                           } else if (error instanceof Error) {
                             setErrorMessage(error.message);
@@ -308,7 +300,7 @@ export default function Products() {
                         }
                       }}
                     >
-                      delete
+                      {t("actions.delete")}
                     </button>
                   </td>
                 </tr>

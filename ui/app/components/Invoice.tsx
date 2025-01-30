@@ -5,6 +5,7 @@ import { currency } from "@/lib/utils";
 import { Client, Order as OrderT, OrderDetail, Product } from "@/utils/schemas";
 import { pdf, PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { InvoicePDF } from "@/components/InvoicePDF";
 type IProduct = {
@@ -24,6 +25,7 @@ interface OrderProps {
 }
 
 export default function Order({ invoiceId }: OrderProps) {
+  const { t } = useTranslation(["common", "invoices"]);
   const [orderIds, setOrderIds] = useState<string[]>([]);
   const [orderId, setOrderId] = useState<string>(invoiceId);
   const [order, setOrder] = useState<OrderT | null>(null);
@@ -134,13 +136,11 @@ export default function Order({ invoiceId }: OrderProps) {
   ) {
     const newDetails = [...orderDetails];
     newDetails[index].quantity = parseInt(e.target.value);
-      
 
     try {
       const record = await pb
         .collection("order_details")
         .update(newDetails[index].id, newDetails[index]);
-        
 
       setOrderDetails(newDetails);
     } catch (error) {
@@ -158,7 +158,6 @@ export default function Order({ invoiceId }: OrderProps) {
     const record_id = detail.product;
     try {
       const record = await pb.collection("products").update(record_id, data);
-        
 
       setProducts(newProducts);
     } catch (error) {
@@ -167,12 +166,10 @@ export default function Order({ invoiceId }: OrderProps) {
   }
 
   if (!order || !client) {
-    return <div>Loading...</div>;
+    return <div>{t("invoices:loading")}</div>;
   }
 
   async function handleAddProduct() {
-      
-
     const data = {
       company: pb.authStore.record?.company,
       order: orderId,
@@ -180,9 +177,8 @@ export default function Order({ invoiceId }: OrderProps) {
       quantity: Number(productToAdd.quantity),
     };
 
-      
     const record = await pb.collection("order_details").create(data);
-      
+
     fetchOrderdetails();
     setAddingProduct(false);
   }
@@ -218,7 +214,7 @@ export default function Order({ invoiceId }: OrderProps) {
     const detailsRecord = await pb
       .collection("order_details")
       .create(detailsData);
-      
+
     await fetchProducts(orderDetails);
     await fetchOrderdetails();
     setFormData({
@@ -234,7 +230,7 @@ export default function Order({ invoiceId }: OrderProps) {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-      
+
     const newProduct = { ...productToAdd };
     switch (name) {
       case "id":
@@ -250,7 +246,6 @@ export default function Order({ invoiceId }: OrderProps) {
         break;
     }
     setProductToAdd(newProduct);
-      
   };
 
   return (
@@ -258,11 +253,13 @@ export default function Order({ invoiceId }: OrderProps) {
       <div className="container mx-auto p-4 grid grid-cols-2 gap-4">
         <div className={`modal ${isModalOpen ? "modal-open" : ""}`}>
           <div className="modal-box">
-            <h3 className="font-bold text-lg">New Client</h3>
+            <h3 className="font-bold text-lg">
+              {t("invoices:newOrderDetail")}
+            </h3>
             <form>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Name</span>
+                  <span className="label-text">{t("invoices:product")}</span>
                 </label>
                 <input
                   type="text"
@@ -274,7 +271,7 @@ export default function Order({ invoiceId }: OrderProps) {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Price</span>
+                  <span className="label-text">{t("invoices:price")}</span>
                 </label>
                 <input
                   type="number"
@@ -286,7 +283,7 @@ export default function Order({ invoiceId }: OrderProps) {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Phone</span>
+                  <span className="label-text">{t("invoices:quantity")}</span>
                 </label>
                 <input
                   type="number"
@@ -302,10 +299,10 @@ export default function Order({ invoiceId }: OrderProps) {
                 className="btn btn-primary"
                 onClick={handleNewProductSave}
               >
-                Save
+                {t("common:save")}
               </button>
               <button className="btn" onClick={handleModalClose}>
-                Cancel
+                {t("common:cancel")}
               </button>
             </div>
           </div>
@@ -314,10 +311,14 @@ export default function Order({ invoiceId }: OrderProps) {
         {/* Editable Form */}
         <div className="border p-4 rounded flex flex-col gap-4">
           <div className="flex flex-row gap-4 justify-between">
-            <h2 className="text-xl font-bold mb-4">Edit Invoice</h2>
+            <h2 className="text-xl font-bold mb-4">
+              {t("invoices:editInvoice")}
+            </h2>
             {/* dropdown menu containing order ids that set orderId to the one selected */}
             <div className="form-control flex-row gap-2">
-              <label className="label text-nowrap">Invoice ID</label>
+              <label className="label text-nowrap">
+                {t("invoices:invoiceId")}
+              </label>
               <select
                 name="orderId"
                 value={orderId}
@@ -325,7 +326,7 @@ export default function Order({ invoiceId }: OrderProps) {
                 className="select select-bordered text-wrap w-full"
               >
                 <option value="" disabled>
-                  Select an invoice
+                  {t("invoices:selectInvoice")}
                 </option>
                 {orderIds.map((order) => (
                   <option key={order} value={order}>
@@ -337,7 +338,7 @@ export default function Order({ invoiceId }: OrderProps) {
           </div>
 
           <div className="form-control">
-            <label className="label">PO Number</label>
+            <label className="label">{t("invoices:po")}</label>
             <input
               type="text"
               value={order.po}
@@ -346,7 +347,7 @@ export default function Order({ invoiceId }: OrderProps) {
             />
           </div>
           <div className="form-control">
-            <label className="label">Date</label>
+            <label className="label">{t("invoices:date")}</label>
             <input
               type="date"
               value={order.date}
@@ -358,10 +359,10 @@ export default function Order({ invoiceId }: OrderProps) {
           <table className="table table-zebra w-full mt-4">
             <thead>
               <tr>
-                <th colSpan={2}>Product</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th className="text-right">Total</th>
+                <th colSpan={2}>{t("invoices:product")}</th>
+                <th>{t("invoices:quantity")}</th>
+                <th>{t("invoices:price")}</th>
+                <th className="text-right">{t("invoices:total")}</th>
               </tr>
             </thead>
             <tbody>
@@ -400,7 +401,7 @@ export default function Order({ invoiceId }: OrderProps) {
                         fetchOrderdetails();
                       }}
                     >
-                      delete
+                      {t("common:delete")}
                     </button>
                   </td>
                 </tr>
@@ -415,7 +416,7 @@ export default function Order({ invoiceId }: OrderProps) {
                       className="select select-bordered text-wrap w-full"
                     >
                       <option value="" disabled>
-                        Select a product
+                        {t("invoices:selectProduct")}
                       </option>
                       {allProducts.map((product) => (
                         <option key={product.id} value={product.id}>
@@ -427,7 +428,7 @@ export default function Order({ invoiceId }: OrderProps) {
                         value={products[productToAdd.id]?.id}
                         onClick={handleNewProduct}
                       >
-                        new product
+                        {t("invoices:newProduct")}
                       </option>
                     </select>
                   </td>
@@ -465,13 +466,13 @@ export default function Order({ invoiceId }: OrderProps) {
           {addingProduct && (
             <div className="w-full flex items-center justify-evenly {}">
               <button className="btn btn-secondary" onClick={handleAddProduct}>
-                Confirm
+                {t("common:save")}
               </button>
               <button
                 className="btn btn-primary"
                 onClick={() => setAddingProduct(false)}
               >
-                Cancel
+                {t("common:cancel")}
               </button>
             </div>
           )}
@@ -480,7 +481,7 @@ export default function Order({ invoiceId }: OrderProps) {
               className=" btn btn-secondary"
               onClick={() => setAddingProduct(true)}
             >
-              Add
+              {t("invoices:addProduct")}
             </button>
           )}
         </div>
@@ -495,7 +496,7 @@ export default function Order({ invoiceId }: OrderProps) {
                 onChange={() => setEntete(!entete)}
                 className="toggle toggle-secondary"
               />
-              <span>Toggle Header</span>
+              <span>{t("invoices:toggleHeader")}</span>
             </label>
 
             <label className="flex items-center gap-2">
@@ -505,7 +506,7 @@ export default function Order({ invoiceId }: OrderProps) {
                 onChange={() => setStamp(!stamp)}
                 className="toggle toggle-secondary"
               />
-              <span>Toggle Stamp</span>
+              <span>{t("invoices:toggleStamp")}</span>
             </label>
             <div className="flex gap-2">
               <button className="btn btn-secondary">
@@ -526,7 +527,7 @@ export default function Order({ invoiceId }: OrderProps) {
                   fileName={orderId + ".pdf"}
                 >
                   {({ blob, url, loading, error }) =>
-                    loading ? "Loading document..." : "Download"
+                    loading ? t("invoices:loading") : t("invoices:download")
                   }
                 </PDFDownloadLink>
               </button>
@@ -556,7 +557,7 @@ export default function Order({ invoiceId }: OrderProps) {
                   }
                 }}
               >
-                Print
+                {t("invoices:print")}
               </button>
             </div>
           </div>

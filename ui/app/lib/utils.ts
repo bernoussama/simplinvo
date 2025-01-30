@@ -83,7 +83,7 @@ export function numberToWords(n: number): string | boolean {
 
   // Get the result by translating the given number
   const result = translate(n);
-  return result.trim() + ".";
+  return result.trim();
 }
 
 /**
@@ -172,3 +172,6 @@ export function numberToWordsFrench(n: number): string | boolean {
   // uppercase first letter
   return result.charAt(0).toUpperCase() + result.slice(1);
 }
+
+// if running vite dev or vite build
+export const isProd = import.meta.env.MODE === "production";

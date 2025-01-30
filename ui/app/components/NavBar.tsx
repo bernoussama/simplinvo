@@ -4,8 +4,11 @@ import { isLoggedIn, pb } from "@/lib/pocketbase";
 import ThemeToggle from "./theme-toggle";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import LangSwitcher from "./LangSwitcher";
 
 export default function NavBar() {
+  const { t } = useTranslation("common");
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [companyName, setCompanyName] = useState("");
 
@@ -29,7 +32,6 @@ export default function NavBar() {
   const navigate = useNavigate();
 
   function logout() {
-      
     pb.authStore.clear();
     // reload the page
     navigate("/");
@@ -75,13 +77,13 @@ export default function NavBar() {
               {/* </ul> */}
             </li>
             <li>
-              <Link to="/products">Products</Link>
+              <Link to="/products">{t("products")}</Link>
             </li>
             <li>
-              <Link to="/invoices">Invoices</Link>
+              <Link to="/invoices">{t("invoices")}</Link>
             </li>
             <li>
-              <Link to="/invoice">Invoice Preview</Link>
+              <Link to="/invoice">{t("invoice-preview")}</Link>
             </li>
           </ul>
         </div>
@@ -93,36 +95,39 @@ export default function NavBar() {
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1">
           <li>
-            <Link to="/dashboard">Dashboard</Link>
+            <Link to="/dashboard">{t("dashboard")}</Link>
           </li>
           <li>
             <Link to="/clients">Clients</Link>
           </li>
           <li>
-            <Link to="/products">Products</Link>
+            <Link to="/products">{t("products")}</Link>
           </li>
           <li>
-            <Link to="/invoices">Invoices</Link>
+            <Link to="/invoices">{t("invoices")}</Link>
           </li>
           <li>
-            <Link to="/invoice">Invoice Preview</Link>
+            <Link to="/invoice">{t("invoice-preview")}</Link>
           </li>
         </ul>
       </div>
       <div className="navbar-end gap-4">
-        <Link to="/profile" className="btn btn-ghost">
-          {companyName}
-        </Link>
+        {loggedIn && (
+          <Link to="/profile" className="btn btn-ghost">
+            {companyName}
+          </Link>
+        )}
         <ThemeToggle />
         {loggedIn ? (
           <button className="btn" onClick={logout}>
-            Logout
+            {t("logout")}
           </button>
         ) : (
           <Link className="btn" to="/login">
-            Login
+            {t("login")}
           </Link>
         )}
+        <LangSwitcher />
       </div>
     </div>
   );
