@@ -24,9 +24,9 @@ export default function Index() {
             <p className="text-lg md:text-xl text-secondary max-w-3xl mx-auto mb-10">
               {t("subheading")}
             </p>
-            <div className="flex justify-center gap-4">
+            <div className=" flex-row lg:flex-col justify-center items-center gap-2 sm:gap-4">
               <Link to="/join">
-                <button className="btn btn-secondary btn-lg">
+                <button className="btn btn-secondary btn-lg mb-2">
                   {t("getStarted")}
                 </button>
               </Link>
