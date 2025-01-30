@@ -1,7 +1,5 @@
 import pocketbase from "pocketbase";
-
-// if running vite dev or vite build
-const isProd = import.meta.env.MODE === "production";
+import { isProd } from "./utils";
 
 const baseURL = isProd ? "/" : "http://localhost:8090/";
 

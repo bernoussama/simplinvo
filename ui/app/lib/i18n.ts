@@ -11,6 +11,7 @@ import profileEN from "@/locales/en/profile.json";
 import profileFR from "@/locales/fr/profile.json";
 import indexEN from "@/locales/en/index.json";
 import indexFR from "@/locales/fr/index.json";
+import { isProd } from "./utils";
 
 if (typeof window !== "undefined") {
   const localResources = {
@@ -134,7 +135,7 @@ if (typeof window !== "undefined") {
     // init i18next
     // for all options read: https://www.i18next.com/overview/configuration-options
     .init({
-      debug: true,
+      debug: !isProd,
       interpolation: {
         escapeValue: false, // not needed for react as it escapes by default
       },
